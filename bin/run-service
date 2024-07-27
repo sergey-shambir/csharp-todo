@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -o errexit
+
+exec dotnet run --project TodoApi/ --launch-profile https
