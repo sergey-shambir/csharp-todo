@@ -36,22 +36,10 @@ namespace TodoApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTodoItem(int id, TodoItem todoItem)
         {
-            if (id != todoItem.Id)
-            {
-                return BadRequest();
-            }
-
-            context.Entry(todoItem).State = EntityState.Modified;
-
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException) when (!TodoItemExists(id))
-            {
-                return NotFound();
-            }
-
+            var record = context.TodoItems.First(item => item.Id == id);
+            record.Title = todoItem.Title;
+            record.IsComplete = todoItem.IsComplete;
+            await context.SaveChangesAsync();
             return NoContent();
         }
 
