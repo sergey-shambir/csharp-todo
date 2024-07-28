@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Models;
@@ -11,9 +6,9 @@ namespace TodoApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TodoItemsController(TodoApiContext context) : ControllerBase
+    public class TodoItemsController(TodoApiDbContext context) : ControllerBase
     {
-        private readonly TodoApiContext context = context;
+        private readonly TodoApiDbContext context = context;
 
         // GET: api/TodoItems
         [HttpGet]
