@@ -3,7 +3,8 @@ using TodoApi.Models;
 
 var builder = WebApplication.CreateBuilder(
     new WebApplicationOptions{
-        ContentRootPath = args.Length > 0 ? args[0] : Directory.GetCurrentDirectory(),
+        Args = args,
+        ContentRootPath = Environment.GetEnvironmentVariable("APP_CONTENT_ROOT_PATH") ?? Directory.GetCurrentDirectory(),
         WebRootPath = "public"
     }
 );

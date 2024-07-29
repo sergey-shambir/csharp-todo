@@ -1,0 +1,1 @@
+docker exec -i csharp-todo-db /App/scripts/mssql-init-database.sh

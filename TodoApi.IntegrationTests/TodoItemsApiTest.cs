@@ -1,9 +1,5 @@
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NuGet.ContentModel;
-using NuGet.Protocol;
 using TodoApi.IntegrationTests.Common;
 using TodoApi.Models;
 

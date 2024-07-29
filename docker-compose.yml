@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   csharp-todo-db:
     image: mcr.microsoft.com/mssql/server:2019-CU27-ubuntu-20.04
@@ -11,7 +9,7 @@ services:
       - MSSQL_COLLATION=LATIN1_GENERAL_100_CI_AS_SC_UTF8
     volumes:
       - csharp_todo_db_data:/var/opt/mssql/
-      - $PWD/docker/scripts/:/App/scripts/
+      - ./docker/scripts/:/App/scripts/
     ports:
       - 127.0.0.1:1433:1433
 
