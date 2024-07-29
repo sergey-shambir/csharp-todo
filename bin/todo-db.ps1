@@ -1,0 +1,1 @@
+docker exec -it csharp-todo-db psql --host=127.0.0.1 --username=todoapi todo

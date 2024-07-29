@@ -1,17 +1,16 @@
 services:
   csharp-todo-db:
-    image: mcr.microsoft.com/mssql/server:2019-CU27-ubuntu-20.04
+    image: postgres:16.3-alpine
     container_name: csharp-todo-db
     hostname: csharp-todo-db
     environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=Buquaem6
-      - MSSQL_COLLATION=LATIN1_GENERAL_100_CI_AS_SC_UTF8
+      - POSTGRES_USER=todoapi
+      - POSTGRES_PASSWORD=em4xooNu
+      - POSTGRES_DB=todo
     volumes:
-      - csharp_todo_db_data:/var/opt/mssql/
-      - ./docker/scripts/:/App/scripts/
+      - csharp_todo_db_postgress_data:/var/lib/postgresql/data
     ports:
-      - 127.0.0.1:1433:1433
+      - 127.0.0.1:5432:5432
 
 volumes:
-  csharp_todo_db_data:
+  csharp_todo_db_postgress_data:

@@ -29,7 +29,7 @@ public class TodoItemsApiTest(IntegrationTestFixture<Program> fixture) : IClassF
     private async Task<TodoItem[]> ListTodoItems()
     {
         var response = await HttpClient.GetAsync("api/TodoItems");
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCode(response);
 
         var content = await response.Content.ReadAsStringAsync();
         return JsonConvert.DeserializeObject<TodoItem[]>(content) ?? throw new ArgumentException($"Unexpected JSON response: {content}");
@@ -39,11 +39,11 @@ public class TodoItemsApiTest(IntegrationTestFixture<Program> fixture) : IClassF
     {
         TodoItem item = new(title);
         var response = await HttpClient.PostAsJsonAsync("api/TodoItems", item);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCode(response);
 
         var itemUrl = response.Headers.Location;
         response = await HttpClient.GetAsync(itemUrl);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCode(response);
 
         var content = await response.Content.ReadAsStringAsync();
         return JsonConvert.DeserializeObject<TodoItem>(content) ?? throw new ArgumentException($"Unexpected JSON response: {content}");
@@ -52,13 +52,13 @@ public class TodoItemsApiTest(IntegrationTestFixture<Program> fixture) : IClassF
     private async Task UpdateTodoItem(TodoItem item)
     {
         var response = await HttpClient.PutAsJsonAsync($"api/TodoItems/{item.Id}", item);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCode(response);
     }
 
     private async Task<TodoItem> GetTodoItem(int? id)
     {
         var response = await HttpClient.GetAsync($"api/TodoItems/{id}");
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCode(response);
 
         var content = await response.Content.ReadAsStringAsync();
         return JsonConvert.DeserializeObject<TodoItem>(content) ?? throw new ArgumentException($"Unexpected JSON response: {content}");
@@ -67,7 +67,16 @@ public class TodoItemsApiTest(IntegrationTestFixture<Program> fixture) : IClassF
     private async Task DeleteTodoItem(int? id)
     {
         var response = await HttpClient.DeleteAsync($"api/TodoItems/{id}");
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCode(response);
+    }
+
+    private static async Task EnsureSuccessStatusCode(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Fail(content);
+        }
     }
 
     private HttpClient HttpClient

@@ -12,7 +12,7 @@ namespace TodoApi.IntegrationTests.Common;
 public class IntegrationTestFixture<TProgram> : IDisposable
 where TProgram : class
 {
-    private const string SQL_CONNECTION = "Server=127.0.0.1,1433;Database=todo;User Id=todoapi;Password=em4xooNu;TrustServerCertificate=true";
+    private const string SQL_CONNECTION = "Host=127.0.0.1;Database=todo;Username=todoapi;Password=em4xooNu";
 
     public IntegrationTestFixture()
     {
@@ -23,7 +23,7 @@ where TProgram : class
             {
                 // Instantiate DB context once to wrap the SUT with transaction (see below).
                 var options = new DbContextOptionsBuilder<TodoApiDbContext>()
-                .UseSqlServer(SQL_CONNECTION)
+                .UseNpgsql(SQL_CONNECTION)
                 .Options;
                 services.AddSingleton(options);
                 services.AddSingleton<TodoApiDbContext>();
