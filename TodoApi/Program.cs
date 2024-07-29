@@ -1,7 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(
+    new WebApplicationOptions{
+        ContentRootPath = args.Length > 0 ? args[0] : Directory.GetCurrentDirectory(),
+        WebRootPath = "public"
+    }
+);
 
 // Add services to the container.
 
@@ -25,10 +30,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
+
+app.UseFileServer();
 
 app.Run();
 
