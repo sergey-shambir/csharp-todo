@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using Microsoft.VisualStudio.TextTemplating;
-
 namespace TodoApi.Models;
 
 public class TodoItem(string title)
@@ -16,11 +13,6 @@ public class TodoItem(string title)
             return Id == other.Id && Title == other.Title && IsComplete == other.IsComplete;
         }
         return false;
-    }
-
-    public override string ToString()
-    {
-        return $"TodoItem(Id={Id}, Title={Title}, IsComplete={IsComplete})";
     }
 
     public override int GetHashCode()

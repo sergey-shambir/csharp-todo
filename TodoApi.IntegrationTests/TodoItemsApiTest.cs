@@ -5,38 +5,25 @@ using TodoApi.Models;
 
 namespace TodoApi.IntegrationTests;
 
-[TestFixture]
-public class TodoItemsApiTest
+public class TodoItemsApiTest(IntegrationTestFixture<Program> fixture) : IClassFixture<IntegrationTestFixture<Program>>
 {
-    [OneTimeSetUp]
-    public void OneTimeSetUp()
-    {
-        _fixture = new();
-    }
-
-    [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
-        _fixture.Dispose();
-    }
-
-    [Test]
+    [Fact]
     public async Task Test1()
     {
-        Assert.That(await ListTodoItems(), Is.EqualTo(Array.Empty<TodoItem>()));
+        Assert.Equal([], await ListTodoItems());
 
         var item1 = await CreateTodoItem("Clean the room");
         var item2 = await CreateTodoItem("Make borscht");
         var item3 = await CreateTodoItem("Eat borscht");
-        Assert.That(await ListTodoItems(), Is.EqualTo(new TodoItem[] { item1, item2, item3 }));
+        Assert.Equal([item1, item2, item3], await ListTodoItems());
 
         await DeleteTodoItem(item1.Id);
-        Assert.That(await ListTodoItems(), Is.EqualTo(new TodoItem[] { item2, item3 }));
+        Assert.Equal([item2, item3], await ListTodoItems());
 
         item3.Title = "Eat borscht with sour cream";
         await UpdateTodoItem(item3);
-        Assert.That(await GetTodoItem(item3.Id), Is.EqualTo(item3));
-        Assert.That(await ListTodoItems(), Is.EqualTo(new TodoItem[] { item2, item3 }));
+        Assert.Equal(item3, await GetTodoItem(item3.Id));
+        Assert.Equal([item2, item3], await ListTodoItems());
     }
 
     private async Task<TodoItem[]> ListTodoItems()
@@ -88,5 +75,5 @@ public class TodoItemsApiTest
         get => _fixture.HttpClient;
     }
 
-    private IntegrationTestFixture<Program> _fixture;
+    private IntegrationTestFixture<Program> _fixture = fixture;
 }

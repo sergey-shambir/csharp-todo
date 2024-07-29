@@ -9,8 +9,8 @@ using TodoApi.Models;
 
 namespace TodoApi.IntegrationTests.Common;
 
-class IntegrationTestFixture<TStartup> : IDisposable
-where TStartup : class
+public class IntegrationTestFixture<TProgram> : IDisposable
+where TProgram : class
 {
     private const string SQL_CONNECTION = "Server=127.0.0.1,1433;Database=todo;User Id=todoapi;Password=em4xooNu;TrustServerCertificate=true";
 
