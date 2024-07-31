@@ -11,7 +11,7 @@ public class TodoListApiTest(IntegrationTestFixture<Program> fixture) : IClassFi
     private readonly TodoListTestApiGateway _gateway = new(fixture.HttpClient);
 
     [Fact]
-    public async Task TestSingleListLifecycle()
+    public async Task TestCreateEditDeleteSingleList()
     {
         TodoListDetailedData list = await _gateway.CreateTodoList("Home");
         Assert.Equal("Home", list.Name);
@@ -43,12 +43,41 @@ public class TodoListApiTest(IntegrationTestFixture<Program> fixture) : IClassFi
         Assert.Equal([0, 2], GetCompletedItemPositions(list));
 
         await _gateway.DeleteTodoItem(list.Id, 1);
-        
+
         list = await _gateway.GetTodoList(list.Id);
         Assert.Equal(["Clean the room", "Make borscht", "Eat borscht with soup cream"], GetItemTitles(list));
         Assert.Equal([0, 1], GetCompletedItemPositions(list));
 
         await _gateway.DeleteTodoList(list.Id);
+    }
+
+    [Fact]
+    public async Task TestCreateEditDeleteTwoLists()
+    {
+        TodoListDetailedData todoHome = await _gateway.CreateTodoList("Home");
+        await _gateway.AddTodoItem(todoHome.Id, "Clean the room");
+        await _gateway.AddTodoItem(todoHome.Id, "Eat borscht");
+        await _gateway.AddTodoItem(todoHome.Id, "Make borscht");
+
+        TodoListDetailedData todoShop = await _gateway.CreateTodoList("Shopping list");
+        await _gateway.AddTodoItem(todoShop.Id, "Milk");
+        await _gateway.AddTodoItem(todoShop.Id, "Croissant");
+        await _gateway.EditTodoItem(todoShop.Id, 0, new EditTodoItemParams(Title: "Fresh milk"));
+
+        todoHome = await _gateway.GetTodoList(todoHome.Id);
+        Assert.Equal("Home", todoHome.Name);
+        Assert.Equal(["Clean the room", "Eat borscht", "Make borscht"], GetItemTitles(todoHome));
+
+        todoShop = await _gateway.GetTodoList(todoShop.Id);
+        Assert.Equal("Shopping list", todoShop.Name);
+        Assert.Equal(["Fresh milk", "Croissant"], GetItemTitles(todoShop));
+
+        await _gateway.DeleteTodoItem(todoShop.Id, 0);
+        await _gateway.DeleteTodoList(todoHome.Id);
+
+        todoShop = await _gateway.GetTodoList(todoShop.Id);
+        Assert.Equal("Shopping list", todoShop.Name);
+        Assert.Equal(["Croissant"], GetItemTitles(todoShop));
     }
 
     private static string[] GetItemTitles(TodoListDetailedData list)
