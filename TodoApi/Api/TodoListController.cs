@@ -43,10 +43,10 @@ public class TodoListController(TodoApiDbContext context) : ControllerBase
     }
 
     [HttpPost("{listId}")]
-    public async Task<ActionResult<int>> AddTodoItem(int listId, string title)
+    public async Task<ActionResult<int>> AddTodoItem(int listId, AddTodoItemRequest request)
     {
         AddTodoItemUseCase useCase = new(_context, _repository);
-        int position = await useCase.Add(listId, title);
+        int position = await useCase.Add(listId, request.Title);
 
         return position;
     }
@@ -79,4 +79,5 @@ public class TodoListController(TodoApiDbContext context) : ControllerBase
     }
 
     public record class CreateTodoListRequest(string Name);
+    public record class AddTodoItemRequest(string Title);
 }

@@ -54,7 +54,7 @@ public class TodoList(string name)
         _items.RemoveAt(position);
         for (int i = position, iSize = _items.Count; i < iSize; ++i)
         {
-            _items[i].Position = position;
+            _items[i].Position = i;
         }
     }
 

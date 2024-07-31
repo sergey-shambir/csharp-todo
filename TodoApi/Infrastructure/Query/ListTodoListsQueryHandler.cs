@@ -10,6 +10,7 @@ public class ListTodoListsQueryHandler(TodoApiDbContext context)
     public Task<TodoListData[]> List()
     {
         return _context.TodoLists
+            .OrderBy(list => list.Id)
             .Select(list => new TodoListData(list.Id, list.Name))
             .AsNoTracking()
             .ToArrayAsync();
