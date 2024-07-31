@@ -15,10 +15,10 @@ public class TodoListController(TodoApiDbContext context) : ControllerBase
     private readonly TodoListRepository _repository = new(context);
 
     [HttpGet]
-    public async Task<TodoListData[]> ListTodoLists()
+    public async Task<TodoListData[]> ListTodoLists(string? search)
     {
-        ListTodoListsQueryHandler handler = new(_context);
-        return await handler.List();
+        SearchTodoListsQueryHandler handler = new(_context);
+        return await handler.Search(search);
     }
 
     [HttpGet("{listId}")]
