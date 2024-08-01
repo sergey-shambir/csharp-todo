@@ -1,3 +1,3 @@
 $Env:ASPNETCORE_ENVIRONMENT="Development"
 
-dotnet test TodoApi.UnitTests/
+dotnet test tests/Todo.UnitTests/
