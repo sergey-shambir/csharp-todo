@@ -2,8 +2,8 @@ namespace Todo.Domain.Model;
 
 public class TodoList(string name)
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = name;
+    public int Id { get; init; }
+    public string Name { get; init; } = name;
     private readonly List<TodoItem> _items = [];
 
     public IReadOnlyList<TodoItem> Items => _items.AsReadOnly();
@@ -11,7 +11,7 @@ public class TodoList(string name)
     public int AddItem(string title)
     {
         int position = _items.Count;
-        _items.Add(new(title, Id, position));
+        _items.Add(new TodoItem(title, Id, position));
         return position;
     }
 
@@ -39,7 +39,7 @@ public class TodoList(string name)
         ValidateItemPosition(fromPosition);
         ValidateItemPosition(toPosition);
 
-        int step = (toPosition < fromPosition) ? 1 : -1;
+        int step = toPosition < fromPosition ? 1 : -1;
         for (int i = toPosition; i != fromPosition; i += step)
         {
             SwapItems(i, fromPosition);

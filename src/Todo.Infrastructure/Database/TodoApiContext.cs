@@ -6,7 +6,7 @@ namespace Todo.Infrastructure.Database;
 
 public class TodoApiDbContext(DbContextOptions<TodoApiDbContext> options) : DbContext(options), IUnitOfWork
 {
-    public DbSet<TodoList> TodoLists { get; set; } = null!;
+    public DbSet<TodoList> TodoLists { get; init; } = null!;
 
     async Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
     {

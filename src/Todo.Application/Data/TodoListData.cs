@@ -1,3 +1,3 @@
 namespace Todo.Application.Data;
 
-public record class TodoListData(int Id, string Name);
+public record TodoListData(int Id, string Name);

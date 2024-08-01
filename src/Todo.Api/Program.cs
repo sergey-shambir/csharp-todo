@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Todo.Infrastructure;
 using Todo.Infrastructure.Database;
 
 var builder = WebApplication.CreateBuilder(

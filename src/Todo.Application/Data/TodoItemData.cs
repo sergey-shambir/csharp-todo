@@ -1,3 +1,3 @@
 namespace Todo.Application.Data;
 
-public record class TodoItemData(int Position, string Title, bool IsComplete);
+public record TodoItemData(int Position, string Title, bool IsComplete);

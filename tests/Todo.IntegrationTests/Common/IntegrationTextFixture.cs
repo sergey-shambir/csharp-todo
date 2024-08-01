@@ -16,8 +16,8 @@ where TProgram : class
 
     public IntegrationTestFixture()
     {
-        WebApplicationFactory<Program> factory = new();
-        factory = factory.WithWebHostBuilder((IWebHostBuilder b) =>
+        WebApplicationFactory<TProgram> factory = new();
+        factory = factory.WithWebHostBuilder(b =>
         {
             b.ConfigureTestServices(services =>
             {
@@ -35,13 +35,10 @@ where TProgram : class
 
         var dbContext = factory.Services.GetRequiredService<TodoApiDbContext>();
         _dbTransaction = dbContext.Database.BeginTransaction();
-        _httpClient = factory.CreateClient();
+        HttpClient = factory.CreateClient();
     }
 
-    public HttpClient HttpClient
-    {
-        get => _httpClient;
-    }
+    public HttpClient HttpClient { get; }
 
     public void Dispose()
     {
@@ -54,6 +51,5 @@ where TProgram : class
         GC.SuppressFinalize(this);
     }
 
-    private readonly HttpClient _httpClient;
     private IDbContextTransaction? _dbTransaction;
 }

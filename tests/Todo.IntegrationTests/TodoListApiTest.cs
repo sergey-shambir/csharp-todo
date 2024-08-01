@@ -7,7 +7,6 @@ namespace Todo.IntegrationTests;
 
 public class TodoListApiTest(IntegrationTestFixture<Program> fixture) : IClassFixture<IntegrationTestFixture<Program>>
 {
-    private readonly IntegrationTestFixture<Program> _fixture = fixture;
     private readonly TodoListTestApiGateway _gateway = new(fixture.HttpClient);
 
     [Fact]

@@ -6,11 +6,9 @@ namespace Todo.Infrastructure.Query;
 
 public class GetTodoListQueryHandler(TodoApiDbContext context)
 {
-    private readonly TodoApiDbContext _context = context;
-
     public async Task<TodoListDetailedData?> Get(int listId)
     {
-        var list = await _context.TodoLists
+        var list = await context.TodoLists
             .Where(list => list.Id == listId)
             .Include(list => list.Items.OrderBy(item => item.Position))
             .AsNoTracking()

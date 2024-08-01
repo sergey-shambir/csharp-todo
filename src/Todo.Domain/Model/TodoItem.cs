@@ -4,7 +4,7 @@ public class TodoItem(string title, int listId, int position)
 {
     public int Id { get; internal set; }
     public string Title { get; internal set; } = title;
-    public bool IsComplete { get; internal set; } = false;
+    public bool IsComplete { get; internal set; }
     public int ListId { get; internal set; } = listId;
     public int Position { get; internal set; } = position;
 
