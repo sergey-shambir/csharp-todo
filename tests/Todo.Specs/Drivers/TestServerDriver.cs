@@ -6,16 +6,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Todo.Infrastructure.Database;
 
-namespace Todo.IntegrationTests.Common;
+namespace Todo.Specs.Drivers;
 
-public class IntegrationTestFixture<TProgram> : IDisposable
-where TProgram : class
+public class TestServerDriver : IDisposable
 {
     private const string SQL_CONNECTION = "Host=127.0.0.1;Database=todo;Username=todoapi;Password=em4xooNu";
 
-    public IntegrationTestFixture()
+    private IDbContextTransaction? _dbTransaction;
+
+    public HttpClient HttpClient { get; }
+
+    TestServerDriver()
     {
-        WebApplicationFactory<TProgram> factory = new();
+        WebApplicationFactory<Program> factory = new();
         factory = factory.WithWebHostBuilder(b =>
         {
             b.ConfigureTestServices(services =>
@@ -27,8 +30,7 @@ where TProgram : class
                 services.AddSingleton(options);
                 services.AddSingleton<TodoApiDbContext>();
 
-                // Add logging to see the reason of 500 (Internal Server Error)
-                services.AddLogging(builder => builder.AddJsonConsole().AddFilter(level => level >= LogLevel.Trace));
+                services.AddLogging(builder => builder.AddConsole().AddFilter(level => level >= LogLevel.Warning));
             });
         });
 
@@ -36,8 +38,6 @@ where TProgram : class
         _dbTransaction = dbContext.Database.BeginTransaction();
         HttpClient = factory.CreateClient();
     }
-
-    public HttpClient HttpClient { get; }
 
     public void Dispose()
     {
@@ -50,5 +50,8 @@ where TProgram : class
         GC.SuppressFinalize(this);
     }
 
-    private IDbContextTransaction? _dbTransaction;
+    ~TestServerDriver()
+    {
+        Dispose();
+    }
 }
