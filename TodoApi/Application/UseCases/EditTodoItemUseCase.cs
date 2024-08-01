@@ -2,18 +2,15 @@ using TodoApi.Application.Data;
 using TodoApi.Application.Exceptions;
 using TodoApi.Application.Persistence;
 using TodoApi.Domain;
-using TodoApi.Infrastructure.Persistence;
+using TodoApi.Domain.Repository;
 
 namespace TodoApi.Application.UseCases;
 
-public class EditTodoItemUseCase(IUnitOfWork unitOfWork, TodoListRepository repository)
+public class EditTodoItemUseCase(IUnitOfWork unitOfWork, ITodoListRepository repository)
 {
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
-    private readonly TodoListRepository _repository = repository;
-
     public async Task Edit(int listId, int position, EditTodoItemParams itemParams)
     {
-        TodoList? list = await _repository.FindByIdAsync(listId);
+        TodoList? list = await repository.FindByIdAsync(listId);
         if (list == null)
         {
             throw new EntityNotFoundException($"Cannot find todo list with id={listId}");
@@ -31,7 +28,7 @@ public class EditTodoItemUseCase(IUnitOfWork unitOfWork, TodoListRepository repo
         {
             list.MoveItem(position, (int)itemParams.Position);
         }
-        _repository.Update(list);
-        await _unitOfWork.SaveChangesAsync();
+        repository.Update(list);
+        await unitOfWork.SaveChangesAsync();
     }
 }

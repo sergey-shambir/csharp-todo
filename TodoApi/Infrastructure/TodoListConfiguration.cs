@@ -10,6 +10,7 @@ public class TodoListConfiguration : IEntityTypeConfiguration<TodoList>
     public void Configure(EntityTypeBuilder<TodoList> builder)
     {
         builder.ToTable("todo_list");
+        builder.Property(list => list.Name).HasMaxLength(100);
         builder.HasMany(list => list.Items)
             .WithOne()
             .HasForeignKey(item => item.ListId);

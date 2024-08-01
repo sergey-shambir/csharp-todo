@@ -1,19 +1,16 @@
 using TodoApi.Application.Persistence;
 using TodoApi.Domain;
-using TodoApi.Infrastructure.Persistence;
+using TodoApi.Domain.Repository;
 
 namespace TodoApi.Application.UseCases;
 
-public class CreateTodoListUseCase(IUnitOfWork unitOfWork, TodoListRepository repository)
+public class CreateTodoListUseCase(IUnitOfWork unitOfWork, ITodoListRepository repository)
 {
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
-    private readonly TodoListRepository _repository = repository;
-
     public async Task<int> Create(string name)
     {
         TodoList list = new(name);
-        _repository.Add(list);
-        await _unitOfWork.SaveChangesAsync();
+        repository.Add(list);
+        await unitOfWork.SaveChangesAsync();
 
         return list.Id;
     }

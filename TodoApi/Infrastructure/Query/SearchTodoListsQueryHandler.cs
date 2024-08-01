@@ -10,9 +10,9 @@ public class SearchTodoListsQueryHandler(TodoApiDbContext context)
 {
     private readonly TodoApiDbContext _context = context;
 
-    public Task<TodoListData[]> Search(string? searchQuery)
+    public async Task<IReadOnlyList<TodoListData>> Search(string? searchQuery)
     {
-        return BuildSearchQuery(searchQuery).ToArrayAsync();
+        return (await BuildSearchQuery(searchQuery).ToListAsync()).AsReadOnly();
     }
 
     private IQueryable<TodoListData> BuildSearchQuery(string? searchQuery)

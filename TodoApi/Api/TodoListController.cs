@@ -15,7 +15,7 @@ public class TodoListController(TodoApiDbContext context) : ControllerBase
     private readonly TodoListRepository _repository = new(context);
 
     [HttpGet]
-    public async Task<TodoListData[]> ListTodoLists(string? search)
+    public async Task<IReadOnlyList<TodoListData>> ListTodoLists(string? search)
     {
         SearchTodoListsQueryHandler handler = new(_context);
         return await handler.Search(search);
@@ -51,8 +51,7 @@ public class TodoListController(TodoApiDbContext context) : ControllerBase
         return position;
     }
 
-    [HttpPatch]
-    [Route("{listId:int}/{position:int}")]
+    [HttpPatch("{listId:int}/{position:int}")]
     public async Task<ActionResult> EditTodoItem(int listId, int position, EditTodoItemParams itemParams)
     {
         EditTodoItemUseCase useCase = new(_context, _repository);
@@ -60,8 +59,7 @@ public class TodoListController(TodoApiDbContext context) : ControllerBase
         return Ok();
     }
 
-    [HttpDelete]
-    [Route("{listId:int}/{position:int}")]
+    [HttpDelete("{listId:int}/{position:int}")]
     public async Task<ActionResult> DeleteTodoItem(int listId, int position)
     {
         DeleteTodoItemUseCase useCase = new(_context, _repository);
@@ -69,8 +67,7 @@ public class TodoListController(TodoApiDbContext context) : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete]
-    [Route("{listId:int}")]
+    [HttpDelete("{listId:int}")]
     public async Task<ActionResult> DeleteList(int listId)
     {
         DeleteTodoListUseCase useCase = new(_context, _repository);
