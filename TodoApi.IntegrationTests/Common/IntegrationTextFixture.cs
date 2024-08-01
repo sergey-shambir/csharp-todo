@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using TodoApi.Models;
+using TodoApi.Infrastructure;
 
 namespace TodoApi.IntegrationTests.Common;
 
@@ -51,6 +51,7 @@ where TProgram : class
             _dbTransaction.Dispose();
             _dbTransaction = null;
         }
+        GC.SuppressFinalize(this);
     }
 
     private readonly HttpClient _httpClient;
