@@ -4,9 +4,34 @@ using Todo.Infrastructure.Database;
 
 namespace Todo.Infrastructure.Query;
 
-public class SearchTodoListsQueryHandler(TodoApiDbContext context)
+public class TodoListQueryService(TodoApiDbContext context)
 {
-    public async Task<IReadOnlyList<TodoListData>> Search(string? searchQuery)
+    public async Task<TodoListDetailedData?> FindTodoList(int listId)
+    {
+        var list = await context.TodoLists
+            .Where(list => list.Id == listId)
+            .Include(list => list.Items.OrderBy(item => item.Position))
+            .AsNoTracking()
+            .SingleOrDefaultAsync();
+        if (list == null)
+        {
+            return null;
+        }
+
+        return new TodoListDetailedData(
+            list.Id,
+            list.Name,
+            list.Items.Select(
+                item => new TodoItemData(
+                    item.Position,
+                    item.Title,
+                    item.IsComplete
+                )
+            ).ToArray()
+        );
+    }
+
+    public async Task<IReadOnlyList<TodoListData>> SearchTodoLists(string? searchQuery)
     {
         return (await BuildSearchQuery(searchQuery).ToListAsync()).AsReadOnly();
     }
