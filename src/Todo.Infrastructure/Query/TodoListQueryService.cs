@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Todo.Application.Data;
+using Todo.Application.Query;
 using Todo.Infrastructure.Database;
 
 namespace Todo.Infrastructure.Query;
 
-public class TodoListQueryService(TodoApiDbContext context)
+public class TodoListQueryService(TodoApiDbContext context): ITodoListQueryService
 {
     public async Task<TodoListDetailedData?> FindTodoList(int listId)
     {
