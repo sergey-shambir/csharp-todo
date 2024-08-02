@@ -14,6 +14,7 @@ public sealed class TodoListStepDefinitions(TestServerDriver driver)
 
     private int? _lastListId;
     private TodoListDetailedData? _lastTodoList;
+    private TodoListData[] _lastTodoListSearchResults;
 
     private int LastListId
     {
@@ -23,6 +24,11 @@ public sealed class TodoListStepDefinitions(TestServerDriver driver)
     private TodoListDetailedData LastTodoList
     {
         get => _lastTodoList ?? throw new InvalidOperationException("Список дел ещё не открыт");
+    }
+
+    private TodoListData[] LastTodoListSearchResults
+    {
+        get => _lastTodoListSearchResults ?? throw new InvalidOperationException("Списки дел ещё не открыты");
     }
 
     [Given(@"(?:я )?создал список ""(.*)""")]
@@ -68,6 +74,18 @@ public sealed class TodoListStepDefinitions(TestServerDriver driver)
         _lastTodoList = await _gateway.GetTodoList(LastListId);
     }
 
+    [When("(?:я )?открыл списки задач")]
+    public async Task КогдаЯОткрылСпискиЗадач()
+    {
+        _lastTodoListSearchResults = await _gateway.ListTodoLists();
+    }
+
+    [When(@"(?:я )?открыл списки задач с фильтром ""(.*)""")]
+    public async Task КогдаЯОткрылСпискиЗадачСФильтром(string searchQuery)
+    {
+        _lastTodoListSearchResults = await _gateway.ListTodoLists(searchQuery);
+    }
+
     [Then(@"(?:я )?вижу задачи: ""(.*)""")]
     public void ТогдаЯВижуЗадачи(string tasksTitlesCommaSeparated)
     {
@@ -82,6 +100,13 @@ public sealed class TodoListStepDefinitions(TestServerDriver driver)
         Assert.Equal(taskTitles, GetCompletedItemTitles(LastTodoList));
     }
 
+    [Then(@"(?:я )?вижу списки: ""(.*)""")]
+    public void TогдаЯВижуСписки(string listNamesCommaSeparated)
+    {
+        string[] taskTitles = SplitCommaSeparatedList(listNamesCommaSeparated);
+        Assert.Equal(taskTitles, GetListNames(LastTodoListSearchResults));
+    }
+
     private static string[] SplitCommaSeparatedList(string text)
     {
         return text.Split(",").Select(x => x.Trim()).Where(x => x != "").ToArray();
@@ -90,6 +115,11 @@ public sealed class TodoListStepDefinitions(TestServerDriver driver)
     private static string[] GetItemTitles(TodoListDetailedData list)
     {
         return list.Items.Select(item => item.Title).ToArray();
+    }
+
+    private static string[] GetListNames(TodoListData[] lists)
+    {
+        return lists.Select(item => item.Name).ToArray();
     }
 
     private static string[] GetCompletedItemTitles(TodoListDetailedData list)
