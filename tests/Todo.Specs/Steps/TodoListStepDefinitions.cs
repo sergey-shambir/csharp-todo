@@ -12,66 +12,73 @@ public sealed class TodoListStepDefinitions(TestServerDriver driver)
     private readonly TestServerDriver _driver = driver;
     private readonly TodoListTestApiGateway _gateway = new(driver.HttpClient);
 
-    private int? _lastListId;
-    private TodoListDetailedData? _lastTodoList;
-    private TodoListData[] _lastTodoListSearchResults;
+    private int? _createdListId;
+    private TodoListDetailedData? _openedTodoList;
+    private TodoListData[]? _lastTodoListSearchResults;
 
-    private int LastListId
+    private int CreatedListId
     {
-        get => _lastListId ?? throw new InvalidOperationException("Список дел не ещё создан");
+        get => _createdListId ?? throw new InvalidOperationException("Список дел не ещё создан");
     }
 
-    private TodoListDetailedData LastTodoList
+    private TodoListDetailedData OpenedTodoList
     {
-        get => _lastTodoList ?? throw new InvalidOperationException("Список дел ещё не открыт");
+        get => _openedTodoList ?? throw new InvalidOperationException("Список дел ещё не открыт");
     }
 
     private TodoListData[] LastTodoListSearchResults
     {
-        get => _lastTodoListSearchResults ?? throw new InvalidOperationException("Списки дел ещё не открыты");
+        get => _lastTodoListSearchResults ?? throw new InvalidOperationException("Поиск списков дел не выполнялся");
     }
 
     [Given(@"(?:я )?создал список ""(.*)""")]
     public async Task ПустьЯСоздалСписок(string name)
     {
         var list = await _gateway.CreateTodoList(name);
-        _lastListId = list.Id;
+        _createdListId = list.Id;
     }
 
     [Given(@"(?:я )?добавил задачу ""(.*)""")]
     public async Task ПустьЯДобавилЗадачу(string title)
     {
-        await _gateway.AddTodoItem(LastListId, title);
+        await _gateway.AddTodoItem(CreatedListId, title);
     }
 
     [Given(@"(?:я )?переместил задачу №(.+) на позицию №(.+)")]
     public async Task ПустьЯПереместилЗадачу(int position, int newPosition)
     {
-        await _gateway.EditTodoItem(LastListId, position, new EditTodoItemParams(Position: newPosition));
+        await _gateway.EditTodoItem(CreatedListId, position, new EditTodoItemParams(Position: newPosition));
     }
 
     [Given(@"(?:я )?переименовал задачу №(.+) на ""(.+)""")]
     public async Task ПустьЯПереименовалЗадачуНа(int position, string newTitle)
     {
-        await _gateway.EditTodoItem(LastListId, position, new EditTodoItemParams(Title: newTitle));
+        await _gateway.EditTodoItem(CreatedListId, position, new EditTodoItemParams(Title: newTitle));
     }
 
     [Given("(?:я )?завершил задачу №(.+)")]
     public async Task ПустьЯЗавершилЗадачу(int position)
     {
-        await _gateway.EditTodoItem(LastListId, position, new EditTodoItemParams(IsCompleted: true));
+        await _gateway.EditTodoItem(CreatedListId, position, new EditTodoItemParams(IsCompleted: true));
     }
 
     [Given("(?:я )?удалил задачу №(.+)")]
     public async Task ПустьЯУдалилЗадачу(int position)
     {
-        await _gateway.DeleteTodoItem(LastListId, position);
+        await _gateway.DeleteTodoItem(CreatedListId, position);
+    }
+
+    [Given(@"я удалил список ""(.*)""")]
+    public async Task ПустьЯУдалилСписок(string name)
+    {
+        var list = LastTodoListSearchResults.First(list => list.Name == name);
+        await _gateway.DeleteTodoList(list.Id);
     }
 
     [When("(?:я )?открыл созданный список")]
     public async Task КогдаЯОткрылСозданныйСписок()
     {
-        _lastTodoList = await _gateway.GetTodoList(LastListId);
+        _openedTodoList = await _gateway.GetTodoList(CreatedListId);
     }
 
     [When("(?:я )?открыл списки задач")]
@@ -86,18 +93,25 @@ public sealed class TodoListStepDefinitions(TestServerDriver driver)
         _lastTodoListSearchResults = await _gateway.ListTodoLists(searchQuery);
     }
 
+    [When(@"я перешёл к списку ""(.*)""")]
+    public async Task КогдаЯПерешёлКСписку(string name)
+    {
+        var list = LastTodoListSearchResults.First(list => list.Name == name);
+        _openedTodoList = await _gateway.GetTodoList(list.Id);
+    }
+
     [Then(@"(?:я )?вижу задачи: ""(.*)""")]
     public void ТогдаЯВижуЗадачи(string tasksTitlesCommaSeparated)
     {
         string[] taskTitles = SplitCommaSeparatedList(tasksTitlesCommaSeparated);
-        Assert.Equal(taskTitles, GetItemTitles(LastTodoList));
+        Assert.Equal(taskTitles, GetItemTitles(OpenedTodoList));
     }
 
     [Then(@"(?:я )?вижу завершённые задачи: ""(.*)""")]
     public void ТогдаЯВижуЗавершённыеЗадачи(string tasksTitlesCommaSeparated)
     {
         string[] taskTitles = SplitCommaSeparatedList(tasksTitlesCommaSeparated);
-        Assert.Equal(taskTitles, GetCompletedItemTitles(LastTodoList));
+        Assert.Equal(taskTitles, GetCompletedItemTitles(OpenedTodoList));
     }
 
     [Then(@"(?:я )?вижу списки: ""(.*)""")]
