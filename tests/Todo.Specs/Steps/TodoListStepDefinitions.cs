@@ -47,19 +47,19 @@ public sealed class TodoListStepDefinitions(TestServerDriver driver)
     [Given(@"(?:я )?переместил задачу №(.+) на позицию №(.+)")]
     public async Task ПустьЯПереместилЗадачу(int position, int newPosition)
     {
-        await _gateway.EditTodoItem(CreatedListId, position, new EditTodoItemParams(Position: newPosition));
+        await _gateway.EditTodoItem(CreatedListId, position, newPosition: newPosition);
     }
 
     [Given(@"(?:я )?переименовал задачу №(.+) на ""(.+)""")]
     public async Task ПустьЯПереименовалЗадачуНа(int position, string newTitle)
     {
-        await _gateway.EditTodoItem(CreatedListId, position, new EditTodoItemParams(Title: newTitle));
+        await _gateway.EditTodoItem(CreatedListId, position, title: newTitle);
     }
 
     [Given("(?:я )?завершил задачу №(.+)")]
     public async Task ПустьЯЗавершилЗадачу(int position)
     {
-        await _gateway.EditTodoItem(CreatedListId, position, new EditTodoItemParams(IsCompleted: true));
+        await _gateway.EditTodoItem(CreatedListId, position, isCompleted: true);
     }
 
     [Given("(?:я )?удалил задачу №(.+)")]

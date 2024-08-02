@@ -4,14 +4,9 @@ using Todo.Domain.Model;
 
 namespace Todo.Infrastructure.Database;
 
-public class TodoApiDbContext(DbContextOptions<TodoApiDbContext> options) : DbContext(options), IUnitOfWork
+public class TodoApiDbContext(DbContextOptions<TodoApiDbContext> options) : DbContext(options)
 {
     public DbSet<TodoList> TodoLists { get; init; } = null!;
-
-    async Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
-    {
-        await base.SaveChangesAsync(cancellationToken);
-    }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

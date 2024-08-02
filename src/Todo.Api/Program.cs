@@ -1,8 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Todo.Infrastructure.Database;
+using Todo.Application.Command;
+using Todo.Domain.Repository;
+using Todo.Infrastructure.Database.Repository;
+using Todo.Application.Persistence;
 
 var builder = WebApplication.CreateBuilder(
-    new WebApplicationOptions{
+    new WebApplicationOptions
+    {
         Args = args,
         ContentRootPath = Environment.GetEnvironmentVariable("APP_CONTENT_ROOT_PATH") ?? Directory.GetCurrentDirectory(),
         WebRootPath = "public"
@@ -13,10 +18,16 @@ var builder = WebApplication.CreateBuilder(
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddControllers();
 builder.Services.AddDbContext<TodoApiDbContext>(
     options => options.UseNpgsql(connectionString)
 );
+
+builder.Services.AddScoped<ITodoListRepository, TodoListRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddMediatR(config => config.RegisterServicesFromAssemblyContaining(typeof(AddTodoItemCommand)));
+
+builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Web;
 using Newtonsoft.Json;
+using Todo.Api.Controllers;
 using Todo.Application.Data;
 using Xunit;
 
@@ -56,9 +57,9 @@ public class TodoListTestApiGateway(HttpClient httpClient)
         await EnsureSuccessStatusCode(response);
     }
 
-    public async Task EditTodoItem(int listId, int position, EditTodoItemParams itemParams)
+    public async Task EditTodoItem(int listId, int position, string? title = null, bool? isCompleted = null, int? newPosition = null)
     {
-        HttpResponseMessage response = await httpClient.PatchAsJsonAsync($"api/todo-list/{listId}/{position}", itemParams);
+        HttpResponseMessage response = await httpClient.PatchAsJsonAsync($"api/todo-list/{listId}/{position}", new { title, isCompleted, newPosition });
         await EnsureSuccessStatusCode(response);
     }
 

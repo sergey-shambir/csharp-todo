@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Todo.Domain.Model;
 using Todo.Domain.Repository;
-using Todo.Infrastructure.Database;
 
-namespace Todo.Infrastructure.Persistence;
+namespace Todo.Infrastructure.Database.Repository;
 
 public class TodoListRepository(TodoApiDbContext context) : ITodoListRepository
 {
