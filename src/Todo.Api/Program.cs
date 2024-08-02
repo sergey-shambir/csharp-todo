@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Todo.Infrastructure.Database;
-using Todo.Application.Command;
 using Todo.Domain.Repository;
 using Todo.Infrastructure.Database.Repository;
-using Todo.Application.Persistence;
 using Todo.Application.Command.Handler;
 using Todo.Infrastructure.Query;
+using Todo.Infrastructure.MediatR;
+using Todo.Application.Persistence;
 
 var builder = WebApplication.CreateBuilder(
     new WebApplicationOptions
@@ -31,6 +31,7 @@ builder.Services.AddMediatR(config =>
 {
     config.RegisterServicesFromAssemblyContaining(typeof(CreateTodoListCommandHandler));
     config.RegisterServicesFromAssemblyContaining(typeof(SearchTodoListsQueryHandler));
+    config.AddOpenBehavior(typeof(TodoPipelineBehavior<,>));
 });
 
 builder.Services.AddControllers();

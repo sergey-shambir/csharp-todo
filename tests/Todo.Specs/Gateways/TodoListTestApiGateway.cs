@@ -59,7 +59,7 @@ public class TodoListTestApiGateway(HttpClient httpClient)
 
     public async Task EditTodoItem(int listId, int position, string? title = null, bool? isCompleted = null, int? newPosition = null)
     {
-        HttpResponseMessage response = await httpClient.PatchAsJsonAsync($"api/todo-list/{listId}/{position}", new { title, isCompleted, newPosition });
+        HttpResponseMessage response = await httpClient.PatchAsJsonAsync($"api/todo-list/{listId}/{position}", new { Title = title, IsCompleted = isCompleted, NewPosition = newPosition });
         await EnsureSuccessStatusCode(response);
     }
 

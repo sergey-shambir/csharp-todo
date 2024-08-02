@@ -1,12 +1,11 @@
 using MediatR;
 using Todo.Application.Exceptions;
-using Todo.Application.Persistence;
 using Todo.Domain.Model;
 using Todo.Domain.Repository;
 
 namespace Todo.Application.Command.Handler;
 
-public class EditTodoItemCommandHandler(ITodoListRepository repository, IUnitOfWork unitOfWork) : IRequestHandler<EditTodoItemCommand>
+public class EditTodoItemCommandHandler(ITodoListRepository repository) : IRequestHandler<EditTodoItemCommand>
 {
     public async Task Handle(EditTodoItemCommand request, CancellationToken cancellationToken)
     {
@@ -29,6 +28,5 @@ public class EditTodoItemCommandHandler(ITodoListRepository repository, IUnitOfW
             list.MoveItem(request.Position, (int)request.NewPosition);
         }
         repository.Update(list);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

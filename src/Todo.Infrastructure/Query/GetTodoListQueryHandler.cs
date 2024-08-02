@@ -14,7 +14,7 @@ public class GetTodoListQueryHandler(TodoApiDbContext context): IRequestHandler<
             .Where(list => list.Id == request.ListId)
             .Include(list => list.Items.OrderBy(item => item.Position))
             .AsNoTracking()
-            .SingleOrDefaultAsync();
+            .SingleOrDefaultAsync(cancellationToken: cancellationToken);
         if (list == null)
         {
             return null;

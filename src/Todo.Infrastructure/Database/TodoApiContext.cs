@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Todo.Application.Persistence;
 using Todo.Domain.Model;
 
 namespace Todo.Infrastructure.Database;

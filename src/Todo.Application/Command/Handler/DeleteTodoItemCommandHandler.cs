@@ -1,11 +1,10 @@
 using MediatR;
-using Todo.Application.Persistence;
 using Todo.Domain.Model;
 using Todo.Domain.Repository;
 
 namespace Todo.Application.Command.Handler;
 
-public class DeleteTodoItemCommandHandler(ITodoListRepository repository, IUnitOfWork unitOfWork) : IRequestHandler<DeleteTodoItemCommand>
+public class DeleteTodoItemCommandHandler(ITodoListRepository repository) : IRequestHandler<DeleteTodoItemCommand>
 {
     public async Task Handle(DeleteTodoItemCommand request, CancellationToken cancellationToken)
     {
@@ -17,6 +16,5 @@ public class DeleteTodoItemCommandHandler(ITodoListRepository repository, IUnitO
 
         list.RemoveItem(request.Position);
         repository.Update(list);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
