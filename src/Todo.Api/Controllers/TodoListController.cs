@@ -2,27 +2,24 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Todo.Application.Command;
 using Todo.Application.Data;
-using Todo.Infrastructure.Database;
-using Todo.Infrastructure.Query;
+using Todo.Application.Query;
 
 namespace Todo.Api.Controllers;
 
 [Route("api/todo-list")]
 [ApiController]
-public class TodoListController(TodoApiDbContext context, IMediator mediator) : ControllerBase
+public class TodoListController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     public async Task<IReadOnlyList<TodoListData>> ListTodoLists(string? search)
     {
-        SearchTodoListsQueryHandler handler = new(context);
-        return await handler.Search(search);
+        return await mediator.Send(new SearchTodoListsQuery(search));
     }
 
     [HttpGet("{listId:int}")]
     public async Task<ActionResult<TodoListDetailedData>> GetTodoList(int listId)
     {
-        GetTodoListQueryHandler handler = new(context);
-        TodoListDetailedData? list = await handler.Get(listId);
+        TodoListDetailedData? list = await mediator.Send(new GetTodoListQuery(listId));
         if (list == null)
         {
             return NotFound();

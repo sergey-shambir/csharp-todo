@@ -4,6 +4,8 @@ using Todo.Application.Command;
 using Todo.Domain.Repository;
 using Todo.Infrastructure.Database.Repository;
 using Todo.Application.Persistence;
+using Todo.Application.Command.Handler;
+using Todo.Infrastructure.Query;
 
 var builder = WebApplication.CreateBuilder(
     new WebApplicationOptions
@@ -25,7 +27,11 @@ builder.Services.AddDbContext<TodoApiDbContext>(
 builder.Services.AddScoped<ITodoListRepository, TodoListRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-builder.Services.AddMediatR(config => config.RegisterServicesFromAssemblyContaining(typeof(AddTodoItemCommand)));
+builder.Services.AddMediatR(config =>
+{
+    config.RegisterServicesFromAssemblyContaining(typeof(CreateTodoListCommandHandler));
+    config.RegisterServicesFromAssemblyContaining(typeof(SearchTodoListsQueryHandler));
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

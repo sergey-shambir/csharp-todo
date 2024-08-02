@@ -1,14 +1,22 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Todo.Application.Data;
+using Todo.Application.Query;
 using Todo.Infrastructure.Database;
 
 namespace Todo.Infrastructure.Query;
 
-public class SearchTodoListsQueryHandler(TodoApiDbContext context)
+public class SearchTodoListsQueryHandler(TodoApiDbContext context) : IRequestHandler<SearchTodoListsQuery, IReadOnlyList<TodoListData>>
 {
     public async Task<IReadOnlyList<TodoListData>> Search(string? searchQuery)
     {
         return (await BuildSearchQuery(searchQuery).ToListAsync()).AsReadOnly();
+    }
+
+    public async Task<IReadOnlyList<TodoListData>> Handle(SearchTodoListsQuery request, CancellationToken cancellationToken)
+    {
+        var list = await BuildSearchQuery(request.SearchQuery).ToListAsync(cancellationToken: cancellationToken);
+        return list.AsReadOnly();
     }
 
     private IQueryable<TodoListData> BuildSearchQuery(string? searchQuery)

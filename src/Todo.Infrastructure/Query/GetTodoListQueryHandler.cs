@@ -1,15 +1,17 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Todo.Application.Data;
+using Todo.Application.Query;
 using Todo.Infrastructure.Database;
 
 namespace Todo.Infrastructure.Query;
 
-public class GetTodoListQueryHandler(TodoApiDbContext context)
+public class GetTodoListQueryHandler(TodoApiDbContext context): IRequestHandler<GetTodoListQuery,TodoListDetailedData?>
 {
-    public async Task<TodoListDetailedData?> Get(int listId)
+    public async Task<TodoListDetailedData?> Handle(GetTodoListQuery request, CancellationToken cancellationToken)
     {
         var list = await context.TodoLists
-            .Where(list => list.Id == listId)
+            .Where(list => list.Id == request.ListId)
             .Include(list => list.Items.OrderBy(item => item.Position))
             .AsNoTracking()
             .SingleOrDefaultAsync();
