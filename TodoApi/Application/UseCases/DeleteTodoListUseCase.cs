@@ -1,21 +1,18 @@
 using TodoApi.Application.Persistence;
 using TodoApi.Domain;
-using TodoApi.Infrastructure.Persistence;
+using TodoApi.Domain.Repository;
 
 namespace TodoApi.Application.UseCases;
 
-public class DeleteTodoListUseCase(IUnitOfWork unitOfWork, TodoListRepository repository)
+public class DeleteTodoListUseCase(IUnitOfWork unitOfWork, ITodoListRepository repository)
 {
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
-    private readonly TodoListRepository _repository = repository;
-
     public async Task Delete(int listId)
     {
-        TodoList? list = await _repository.FindByIdAsync(listId);
+        TodoList? list = await repository.FindByIdAsync(listId);
         if (list != null)
         {
-            _repository.Delete(list);
-            await _unitOfWork.SaveChangesAsync();
+            repository.Delete(list);
+            await unitOfWork.SaveChangesAsync();
         }
     }
 }
