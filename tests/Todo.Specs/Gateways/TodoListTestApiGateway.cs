@@ -2,8 +2,9 @@ using System.Net.Http.Json;
 using System.Web;
 using Newtonsoft.Json;
 using Todo.Application.Data;
+using Xunit;
 
-namespace Todo.IntegrationTests.Gateways;
+namespace Todo.Specs.Gateways;
 
 public class TodoListTestApiGateway(HttpClient httpClient)
 {
