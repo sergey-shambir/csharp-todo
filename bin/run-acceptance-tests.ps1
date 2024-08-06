@@ -1,3 +1,3 @@
 $Env:ASPNETCORE_ENVIRONMENT="Development"
 
-dotnet test tests/Todo.UnitTests/
+dotnet test tests/Todo.Specs/

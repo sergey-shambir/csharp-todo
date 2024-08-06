@@ -2,4 +2,4 @@
 
 set -o errexit
 
-exec dotnet test TodoApi.UnitTests/
+exec dotnet test tests/Todo.UnitTests/
