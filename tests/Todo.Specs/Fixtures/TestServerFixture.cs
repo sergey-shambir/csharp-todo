@@ -7,15 +7,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Todo.Infrastructure.Database;
 
-namespace Todo.Specs.Drivers;
+namespace Todo.Specs.Fixtures;
 
-public class TestServerDriver : IDisposable
+public class TestServerFixture : IDisposable
 {
     private IDbContextTransaction? _dbTransaction;
 
     public HttpClient HttpClient { get; }
 
-    public TestServerDriver()
+    public TestServerFixture()
     {
         WebApplicationFactory<Program> factory = new();
         factory = factory.WithWebHostBuilder(b =>
@@ -49,7 +49,7 @@ public class TestServerDriver : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    ~TestServerDriver()
+    ~TestServerFixture()
     {
         Dispose();
     }

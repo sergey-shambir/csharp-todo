@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 using Todo.Application.Data;
 using Xunit;
 
-namespace Todo.Specs.Gateways;
+namespace Todo.Specs.Drivers;
 
-public class TodoListTestApiGateway(HttpClient httpClient)
+public class TodoListTestDriver(HttpClient httpClient)
 {
     public async Task<TodoListData[]> ListTodoLists(string? searchQuery = null)
     {
