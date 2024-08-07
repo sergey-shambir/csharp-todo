@@ -4,7 +4,7 @@ using Todo.Infrastructure.Database;
 var builder = WebApplication.CreateBuilder(
     new WebApplicationOptions{
         Args = args,
-        ContentRootPath = Environment.GetEnvironmentVariable("APP_CONTENT_ROOT_PATH") ?? Directory.GetCurrentDirectory(),
+        ContentRootPath = Environment.GetEnvironmentVariable("APP_CONTENT_ROOT_PATH"),
         WebRootPath = "public"
     }
 );

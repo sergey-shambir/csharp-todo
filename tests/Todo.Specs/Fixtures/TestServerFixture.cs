@@ -20,6 +20,7 @@ public class TestServerFixture : IDisposable
         WebApplicationFactory<Program> factory = new();
         factory = factory.WithWebHostBuilder(b =>
         {
+            b.UseSolutionRelativeContentRoot("frontend");
             b.UseEnvironment("Development");
             b.ConfigureTestServices(services =>
             {
