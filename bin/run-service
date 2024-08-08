@@ -2,10 +2,4 @@
 
 set -o errexit
 
-PARENT_DIR=$(dirname "$(readlink -f "$0")")
-PROJECT_DIR=$(dirname "$PARENT_DIR")
-CONTENT_ROOT_DIR=$PROJECT_DIR/frontend
-
-export APP_CONTENT_ROOT_PATH=$CONTENT_ROOT_DIR
-
 exec dotnet run --project src/Todo.Api/ --launch-profile https
