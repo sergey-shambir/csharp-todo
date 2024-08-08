@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Web;
 using Newtonsoft.Json;
@@ -23,7 +24,7 @@ public class TodoListTestDriver(HttpClient httpClient)
 
         string content = await response.Content.ReadAsStringAsync();
         return JsonConvert.DeserializeObject<TodoListData[]>(content)
-            ?? throw new ArgumentException($"Unexpected JSON response: {content}");
+               ?? throw new ArgumentException($"Unexpected JSON response: {content}");
     }
 
     public async Task<TodoListDetailedData> GetTodoList(int listId)
@@ -33,7 +34,7 @@ public class TodoListTestDriver(HttpClient httpClient)
 
         string content = await response.Content.ReadAsStringAsync();
         return JsonConvert.DeserializeObject<TodoListDetailedData>(content)
-            ?? throw new ArgumentException($"Unexpected JSON response: {content}");
+               ?? throw new ArgumentException($"Unexpected JSON response: {content}");
     }
 
     public async Task<TodoListDetailedData> CreateTodoList(string name)
@@ -47,7 +48,7 @@ public class TodoListTestDriver(HttpClient httpClient)
 
         string content = await response.Content.ReadAsStringAsync();
         return JsonConvert.DeserializeObject<TodoListDetailedData>(content)
-            ?? throw new ArgumentException($"Unexpected JSON response: {content}");
+               ?? throw new ArgumentException($"Unexpected JSON response: {content}");
     }
 
     public async Task AddTodoItem(int listId, string title)
@@ -58,7 +59,8 @@ public class TodoListTestDriver(HttpClient httpClient)
 
     public async Task EditTodoItem(int listId, int position, EditTodoItemParams itemParams)
     {
-        HttpResponseMessage response = await httpClient.PatchAsJsonAsync($"api/todo-list/{listId}/{position}", itemParams);
+        HttpResponseMessage response =
+            await httpClient.PatchAsJsonAsync($"api/todo-list/{listId}/{position}", itemParams);
         await EnsureSuccessStatusCode(response);
     }
 
@@ -76,10 +78,22 @@ public class TodoListTestDriver(HttpClient httpClient)
 
     private static async Task EnsureSuccessStatusCode(HttpResponseMessage response)
     {
-        if (!response.IsSuccessStatusCode)
+        if (response.IsSuccessStatusCode)
         {
-            string content = await response.Content.ReadAsStringAsync();
-            Assert.Fail($"HTTP status code {response.StatusCode}: {content}");
+            return;
         }
+
+        string content = await response.Content.ReadAsStringAsync();
+        if (response.StatusCode == HttpStatusCode.BadRequest)
+        {
+            BadRequestResponse? responseData = JsonConvert.DeserializeObject<BadRequestResponse>(content);
+            if (responseData != null)
+            {
+                throw new ApiBadRequestException(responseData.Title, responseData.Errors);
+            }
+        }
+        Assert.Fail($"HTTP status code {response.StatusCode}: {content}");
     }
+
+    private record BadRequestResponse(int Status, string Title, Dictionary<string, string[]> Errors);
 }
