@@ -1,3 +1,4 @@
+using Microsoft.Build.Framework;
 using TechTalk.SpecFlow;
 using Todo.Application.Data;
 using Todo.Specs.Fixtures;
@@ -11,114 +12,93 @@ public sealed class TodoListStepDefinitions(TestServerFixture fixture)
 {
     private readonly TestServerFixture _fixture = fixture;
     private readonly TodoListTestDriver _driver = new(fixture.HttpClient);
-
-    private int? _createdListId;
-    private TodoListDetailedData? _openedTodoList;
-    private TodoListData[]? _lastTodoListSearchResults;
-
-    private int CreatedListId
-    {
-        get => _createdListId ?? throw new InvalidOperationException("Список дел не ещё создан");
-    }
-
-    private TodoListDetailedData OpenedTodoList
-    {
-        get => _openedTodoList ?? throw new InvalidOperationException("Список дел ещё не открыт");
-    }
-
-    private TodoListData[] LastTodoListSearchResults
-    {
-        get => _lastTodoListSearchResults ?? throw new InvalidOperationException("Поиск списков дел не выполнялся");
-    }
+    private readonly Context _context = new();
 
     [Given(@"(?:я )?создал список ""(.*)""")]
     public async Task ПустьЯСоздалСписок(string name)
     {
         var list = await _driver.CreateTodoList(name);
-        _createdListId = list.Id;
+        _context.OnListCreated(list);
     }
 
-    [Given(@"(?:я )?добавил задачу ""(.*)""")]
-    public async Task ПустьЯДобавилЗадачу(string title)
+    [Given(@"(?:я )?добавил задачи ""(.*)""")]
+    public async Task ПустьЯДобавилЗадачи(string tasksTitles)
     {
-        await _driver.AddTodoItem(CreatedListId, title);
+        foreach (string title in SplitCommaSeparatedList(tasksTitles))
+        {
+            await _driver.AddTodoItem(_context.OpenedListId, title);
+        }
     }
 
-    [Given(@"(?:я )?переместил задачу №(.+) на позицию №(.+)")]
-    public async Task ПустьЯПереместилЗадачу(int position, int newPosition)
+    [When(@"(?:я )?удалил список ""(.*)""")]
+    public async Task КогдаЯУдалилСписок(string name)
     {
-        await _driver.EditTodoItem(CreatedListId, position, new EditTodoItemParams(Position: newPosition));
+        int listId = _context.GetListIdByName(name);
+        await _driver.DeleteTodoList(listId);
+        _context.OnListDeleted(name);
     }
 
-    [Given(@"(?:я )?переименовал задачу №(.+) на ""(.+)""")]
-    public async Task ПустьЯПереименовалЗадачуНа(int position, string newTitle)
+    [When(@"(?:я )?переименовал задачу №(.+) на ""(.+)""")]
+    public async Task КогдаЯПереименовалЗадачуНа(int position, string newTitle)
     {
-        await _driver.EditTodoItem(CreatedListId, position, new EditTodoItemParams(Title: newTitle));
+        await _driver.EditTodoItem(_context.OpenedListId, position, new EditTodoItemParams(Title: newTitle));
     }
 
-    [Given("(?:я )?завершил задачу №(.+)")]
-    public async Task ПустьЯЗавершилЗадачу(int position)
+    [When(@"(?:я )?переместил задачу №(.+) на позицию №(.+)")]
+    public async Task КогдаЯПереместилЗадачу(int position, int newPosition)
     {
-        await _driver.EditTodoItem(CreatedListId, position, new EditTodoItemParams(IsCompleted: true));
+        await _driver.EditTodoItem(_context.OpenedListId, position, new EditTodoItemParams(Position: newPosition));
     }
 
-    [Given("(?:я )?удалил задачу №(.+)")]
-    public async Task ПустьЯУдалилЗадачу(int position)
+    [When("(?:я )?завершил задачу №(.+)")]
+    public async Task КогдаЯЗавершилЗадачу(int position)
     {
-        await _driver.DeleteTodoItem(CreatedListId, position);
+        await _driver.EditTodoItem(_context.OpenedListId, position, new EditTodoItemParams(IsCompleted: true));
     }
 
-    [Given(@"я удалил список ""(.*)""")]
-    public async Task ПустьЯУдалилСписок(string name)
+    [When("(?:я )?удалил задачу №(.+)")]
+    public async Task КогдаЯУдалилЗадачу(int position)
     {
-        var list = LastTodoListSearchResults.First(list => list.Name == name);
-        await _driver.DeleteTodoList(list.Id);
-    }
-
-    [When("(?:я )?открыл созданный список")]
-    public async Task КогдаЯОткрылСозданныйСписок()
-    {
-        _openedTodoList = await _driver.GetTodoList(CreatedListId);
-    }
-
-    [When("(?:я )?открыл списки задач")]
-    public async Task КогдаЯОткрылСпискиЗадач()
-    {
-        _lastTodoListSearchResults = await _driver.ListTodoLists();
-    }
-
-    [When(@"(?:я )?открыл списки задач с фильтром ""(.*)""")]
-    public async Task КогдаЯОткрылСпискиЗадачСФильтром(string searchQuery)
-    {
-        _lastTodoListSearchResults = await _driver.ListTodoLists(searchQuery);
+        await _driver.DeleteTodoItem(_context.OpenedListId, position);
     }
 
     [When(@"я перешёл к списку ""(.*)""")]
-    public async Task КогдаЯПерешёлКСписку(string name)
+    public void КогдаЯПерешёлКСписку(string name)
     {
-        var list = LastTodoListSearchResults.First(list => list.Name == name);
-        _openedTodoList = await _driver.GetTodoList(list.Id);
+        _context.OnListOpened(name);
     }
 
-    [Then(@"(?:я )?вижу задачи: ""(.*)""")]
-    public void ТогдаЯВижуЗадачи(string tasksTitlesCommaSeparated)
+    [Then(@"(?:я )?вижу (\d+) задач(?:и|у|): ""(.*)""")]
+    public async Task ТогдаЯВижуЗадачи(int taskCount, string taskTitles)
     {
-        string[] taskTitles = SplitCommaSeparatedList(tasksTitlesCommaSeparated);
-        Assert.Equal(taskTitles, GetItemTitles(OpenedTodoList));
+        TodoListDetailedData list = await _driver.GetTodoList(_context.OpenedListId);
+        Assert.Equal(taskCount, list.Items.Length);
+        Assert.Equal(SplitCommaSeparatedList(taskTitles), GetItemTitles(list));
     }
 
     [Then(@"(?:я )?вижу завершённые задачи: ""(.*)""")]
-    public void ТогдаЯВижуЗавершённыеЗадачи(string tasksTitlesCommaSeparated)
+    public async Task ТогдаЯВижуЗавершённыеЗадачи(string tasksTitlesCommaSeparated)
     {
+        TodoListDetailedData list = await _driver.GetTodoList(_context.OpenedListId);
         string[] taskTitles = SplitCommaSeparatedList(tasksTitlesCommaSeparated);
-        Assert.Equal(taskTitles, GetCompletedItemTitles(OpenedTodoList));
+        Assert.Equal(taskTitles, GetCompletedItemTitles(list));
     }
 
-    [Then(@"(?:я )?вижу списки: ""(.*)""")]
-    public void TогдаЯВижуСписки(string listNamesCommaSeparated)
+    [Then(@"вижу (\d+) спис(?:ок|ка|ки): ""(.*)""")]
+    public async Task TогдаВижуСписок(int listsCount, string listNamesCommaSeparated)
     {
         string[] taskTitles = SplitCommaSeparatedList(listNamesCommaSeparated);
-        Assert.Equal(taskTitles, GetListNames(LastTodoListSearchResults));
+        TodoListData[] lists = await _driver.ListTodoLists("");
+        Assert.Equal(listsCount, lists.Length);
+        Assert.Equal(taskTitles, GetListNames(lists));
+    }
+
+    [Then(@"с фильтром ""(.*)"" вижу списки: ""(.*)""")]
+    public async Task TогдаСФильтромВижуСписки(string searchQuery, string listNamesCommaSeparated)
+    {
+        string[] taskTitles = SplitCommaSeparatedList(listNamesCommaSeparated);
+        TodoListData[] lists = await _driver.ListTodoLists(searchQuery);
+        Assert.Equal(taskTitles, GetListNames(lists));
     }
 
     private static string[] SplitCommaSeparatedList(string text)
@@ -140,4 +120,46 @@ public sealed class TodoListStepDefinitions(TestServerFixture fixture)
     {
         return list.Items.Where(item => item.IsComplete).Select(item => item.Title).ToArray();
     }
+
+    private class Context
+    {
+        public int OpenedListId => _openedListId ?? throw new ArgumentException("No todo lists created");
+
+        public int GetListIdByName(string listName)
+        {
+            if (!_listNameToIdMap.TryGetValue(listName, out int listId))
+            {
+                throw new ArgumentException($"No todo list with name {listName}");
+            }
+
+            return listId;
+        }
+
+        public void OnListCreated(TodoListDetailedData list)
+        {
+            _listNameToIdMap[list.Name] = list.Id;
+            _openedListId = list.Id;
+        }
+
+        public void OnListOpened(string name)
+        {
+            _openedListId = GetListIdByName(name);
+        }
+
+        public void OnListDeleted(string name)
+        {
+            if (_listNameToIdMap.TryGetValue(name, out int listId))
+            {
+                if (_openedListId == listId)
+                {
+                    _openedListId = null;
+                }
+
+                _listNameToIdMap.Remove(name);
+            }
+        }
+
+        private readonly Dictionary<string, int> _listNameToIdMap = new();
+        private int? _openedListId;
+    };
 }
