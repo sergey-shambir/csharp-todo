@@ -15,24 +15,25 @@ public class TodoListController(TodoApiDbContext context) : ControllerBase
     private readonly TodoListQueryService _queryService = new(context);
 
     [HttpGet]
-    public async Task<IReadOnlyList<TodoListData>> ListTodoLists(string? search)
+    public async Task<IReadOnlyList<TodoListData>> ListTodoLists([FromQuery] string? search)
     {
         return await _queryService.SearchTodoLists(search);
     }
 
     [HttpGet("{listId:int}")]
-    public async Task<ActionResult<TodoListDetailedData>> GetTodoList(int listId)
+    public async Task<ActionResult<TodoListDetailedData>> GetTodoList([FromRoute] int listId)
     {
         TodoListDetailedData? list = await _queryService.FindTodoList(listId);
         if (list == null)
         {
             return NotFound();
         }
+
         return list;
     }
 
     [HttpPost]
-    public async Task<ActionResult<int>> CreateTodoList(CreateTodoListRequest request)
+    public async Task<ActionResult<int>> CreateTodoList([FromBody] CreateTodoListRequest request)
     {
         int listId = await _service.CreateTodoList(request.Name);
 
@@ -40,7 +41,7 @@ public class TodoListController(TodoApiDbContext context) : ControllerBase
     }
 
     [HttpPost("{listId:int}")]
-    public async Task<ActionResult<int>> AddTodoItem(int listId, AddTodoItemRequest request)
+    public async Task<ActionResult<int>> AddTodoItem([FromRoute] int listId, [FromBody] AddTodoItemRequest request)
     {
         int position = await _service.AddTodoItem(listId, request.Title);
 
@@ -48,26 +49,30 @@ public class TodoListController(TodoApiDbContext context) : ControllerBase
     }
 
     [HttpPatch("{listId:int}/{position:int}")]
-    public async Task<ActionResult> EditTodoItem(int listId, int position, EditTodoItemParams itemParams)
+    public async Task<ActionResult> EditTodoItem(
+        [FromRoute] int listId,
+        [FromRoute] int position,
+        [FromBody] EditTodoItemParams itemParams)
     {
         await _service.EditTodoItem(listId, position, itemParams);
         return Ok();
     }
 
     [HttpDelete("{listId:int}/{position:int}")]
-    public async Task<ActionResult> DeleteTodoItem(int listId, int position)
+    public async Task<ActionResult> DeleteTodoItem([FromRoute] int listId, [FromRoute] int position)
     {
         await _service.DeleteTodoItem(listId, position);
         return NoContent();
     }
 
     [HttpDelete("{listId:int}")]
-    public async Task<ActionResult> DeleteList(int listId)
+    public async Task<ActionResult> DeleteList([FromRoute] int listId)
     {
         await _service.DeleteTodoList(listId);
         return NoContent();
     }
 
     public record CreateTodoListRequest(string Name);
+
     public record AddTodoItemRequest(string Title);
 }

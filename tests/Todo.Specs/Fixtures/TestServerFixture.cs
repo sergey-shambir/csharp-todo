@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -6,28 +7,25 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Todo.Infrastructure.Database;
 
-namespace Todo.Specs.Drivers;
+namespace Todo.Specs.Fixtures;
 
-public class TestServerDriver : IDisposable
+public class TestServerFixture : IDisposable
 {
-    private const string SQL_CONNECTION = "Host=127.0.0.1;Database=todo;Username=todoapi;Password=em4xooNu";
-
     private IDbContextTransaction? _dbTransaction;
 
     public HttpClient HttpClient { get; }
 
-    TestServerDriver()
+    public TestServerFixture()
     {
         WebApplicationFactory<Program> factory = new();
         factory = factory.WithWebHostBuilder(b =>
         {
+            b.UseSolutionRelativeContentRoot("frontend");
+            b.UseEnvironment("Development");
             b.ConfigureTestServices(services =>
             {
-                // Instantiate DB context once to wrap the SUT with transaction (see below).
-                var options = new DbContextOptionsBuilder<TodoApiDbContext>()
-                .UseNpgsql(SQL_CONNECTION)
-                .Options;
-                services.AddSingleton(options);
+                var descriptor = services.Single(d => d.ServiceType == typeof(DbContextOptions<TodoApiDbContext>));
+                services.AddSingleton(descriptor.ServiceType, descriptor.ImplementationFactory!);
                 services.AddSingleton<TodoApiDbContext>();
 
                 services.AddLogging(builder => builder.AddConsole().AddFilter(level => level >= LogLevel.Warning));
@@ -36,6 +34,7 @@ public class TestServerDriver : IDisposable
 
         var dbContext = factory.Services.GetRequiredService<TodoApiDbContext>();
         _dbTransaction = dbContext.Database.BeginTransaction();
+
         HttpClient = factory.CreateClient();
     }
 
@@ -47,10 +46,11 @@ public class TestServerDriver : IDisposable
             _dbTransaction.Dispose();
             _dbTransaction = null;
         }
+
         GC.SuppressFinalize(this);
     }
 
-    ~TestServerDriver()
+    ~TestServerFixture()
     {
         Dispose();
     }

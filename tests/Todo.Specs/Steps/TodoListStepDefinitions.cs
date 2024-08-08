@@ -1,16 +1,16 @@
 using TechTalk.SpecFlow;
 using Todo.Application.Data;
+using Todo.Specs.Fixtures;
 using Todo.Specs.Drivers;
-using Todo.Specs.Gateways;
 using Xunit;
 
 namespace Todo.Specs.Steps;
 
 [Binding]
-public sealed class TodoListStepDefinitions(TestServerDriver driver)
+public sealed class TodoListStepDefinitions(TestServerFixture fixture)
 {
-    private readonly TestServerDriver _driver = driver;
-    private readonly TodoListTestApiGateway _gateway = new(driver.HttpClient);
+    private readonly TestServerFixture _fixture = fixture;
+    private readonly TodoListTestDriver _driver = new(fixture.HttpClient);
 
     private int? _createdListId;
     private TodoListDetailedData? _openedTodoList;
@@ -34,70 +34,70 @@ public sealed class TodoListStepDefinitions(TestServerDriver driver)
     [Given(@"(?:я )?создал список ""(.*)""")]
     public async Task ПустьЯСоздалСписок(string name)
     {
-        var list = await _gateway.CreateTodoList(name);
+        var list = await _driver.CreateTodoList(name);
         _createdListId = list.Id;
     }
 
     [Given(@"(?:я )?добавил задачу ""(.*)""")]
     public async Task ПустьЯДобавилЗадачу(string title)
     {
-        await _gateway.AddTodoItem(CreatedListId, title);
+        await _driver.AddTodoItem(CreatedListId, title);
     }
 
     [Given(@"(?:я )?переместил задачу №(.+) на позицию №(.+)")]
     public async Task ПустьЯПереместилЗадачу(int position, int newPosition)
     {
-        await _gateway.EditTodoItem(CreatedListId, position, new EditTodoItemParams(Position: newPosition));
+        await _driver.EditTodoItem(CreatedListId, position, new EditTodoItemParams(Position: newPosition));
     }
 
     [Given(@"(?:я )?переименовал задачу №(.+) на ""(.+)""")]
     public async Task ПустьЯПереименовалЗадачуНа(int position, string newTitle)
     {
-        await _gateway.EditTodoItem(CreatedListId, position, new EditTodoItemParams(Title: newTitle));
+        await _driver.EditTodoItem(CreatedListId, position, new EditTodoItemParams(Title: newTitle));
     }
 
     [Given("(?:я )?завершил задачу №(.+)")]
     public async Task ПустьЯЗавершилЗадачу(int position)
     {
-        await _gateway.EditTodoItem(CreatedListId, position, new EditTodoItemParams(IsCompleted: true));
+        await _driver.EditTodoItem(CreatedListId, position, new EditTodoItemParams(IsCompleted: true));
     }
 
     [Given("(?:я )?удалил задачу №(.+)")]
     public async Task ПустьЯУдалилЗадачу(int position)
     {
-        await _gateway.DeleteTodoItem(CreatedListId, position);
+        await _driver.DeleteTodoItem(CreatedListId, position);
     }
 
     [Given(@"я удалил список ""(.*)""")]
     public async Task ПустьЯУдалилСписок(string name)
     {
         var list = LastTodoListSearchResults.First(list => list.Name == name);
-        await _gateway.DeleteTodoList(list.Id);
+        await _driver.DeleteTodoList(list.Id);
     }
 
     [When("(?:я )?открыл созданный список")]
     public async Task КогдаЯОткрылСозданныйСписок()
     {
-        _openedTodoList = await _gateway.GetTodoList(CreatedListId);
+        _openedTodoList = await _driver.GetTodoList(CreatedListId);
     }
 
     [When("(?:я )?открыл списки задач")]
     public async Task КогдаЯОткрылСпискиЗадач()
     {
-        _lastTodoListSearchResults = await _gateway.ListTodoLists();
+        _lastTodoListSearchResults = await _driver.ListTodoLists();
     }
 
     [When(@"(?:я )?открыл списки задач с фильтром ""(.*)""")]
     public async Task КогдаЯОткрылСпискиЗадачСФильтром(string searchQuery)
     {
-        _lastTodoListSearchResults = await _gateway.ListTodoLists(searchQuery);
+        _lastTodoListSearchResults = await _driver.ListTodoLists(searchQuery);
     }
 
     [When(@"я перешёл к списку ""(.*)""")]
     public async Task КогдаЯПерешёлКСписку(string name)
     {
         var list = LastTodoListSearchResults.First(list => list.Name == name);
-        _openedTodoList = await _gateway.GetTodoList(list.Id);
+        _openedTodoList = await _driver.GetTodoList(list.Id);
     }
 
     [Then(@"(?:я )?вижу задачи: ""(.*)""")]
