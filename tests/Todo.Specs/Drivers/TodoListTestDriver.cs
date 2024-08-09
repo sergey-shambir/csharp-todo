@@ -57,10 +57,21 @@ public class TodoListTestDriver(HttpClient httpClient)
         await EnsureSuccessStatusCode(response);
     }
 
-    public async Task EditTodoItem(int listId, int position, EditTodoItemParams itemParams)
+    public async Task EditTodoItem(
+        int listId,
+        int position,
+        string? newTitle = null,
+        bool? newIsCompleted = null,
+        int? newPosition = null)
     {
-        HttpResponseMessage response =
-            await httpClient.PatchAsJsonAsync($"api/todo-list/{listId}/{position}", itemParams);
+        HttpResponseMessage response = await httpClient.PatchAsJsonAsync(
+            $"api/todo-list/{listId}/{position}", new
+            {
+                Title = newTitle,
+                IsCompleted = newIsCompleted,
+                Position = newPosition
+            }
+        );
         await EnsureSuccessStatusCode(response);
     }
 
@@ -92,8 +103,9 @@ public class TodoListTestDriver(HttpClient httpClient)
                 throw new ApiBadRequestException(responseData.Title, responseData.Errors);
             }
         }
+
         Assert.Fail($"HTTP status code {response.StatusCode}: {content}");
     }
 
-    private record BadRequestResponse(int Status, string Title, Dictionary<string, string[]> Errors);
+    private record BadRequestResponse(string Title, Dictionary<string, string[]> Errors);
 }

@@ -63,7 +63,7 @@ public sealed class TodoListStepDefinitions(TodoListContext context, TestServerF
     {
         try
         {
-            await _driver.EditTodoItem(context.OpenedListId, position, new EditTodoItemParams(Title: newTitle));
+            await _driver.EditTodoItem(context.OpenedListId, position, newTitle: newTitle);
         }
         catch (ApiBadRequestException e)
         {
@@ -74,13 +74,13 @@ public sealed class TodoListStepDefinitions(TodoListContext context, TestServerF
     [When(@"(?:я )?переместил задачу №(.+) на позицию №(.+)")]
     public async Task КогдаЯПереместилЗадачу(int position, int newPosition)
     {
-        await _driver.EditTodoItem(context.OpenedListId, position, new EditTodoItemParams(Position: newPosition));
+        await _driver.EditTodoItem(context.OpenedListId, position, newPosition: newPosition);
     }
 
     [When("(?:я )?завершил задачу №(.+)")]
     public async Task КогдаЯЗавершилЗадачу(int position)
     {
-        await _driver.EditTodoItem(context.OpenedListId, position, new EditTodoItemParams(IsCompleted: true));
+        await _driver.EditTodoItem(context.OpenedListId, position, newIsCompleted: true);
     }
 
     [When("(?:я )?удалил задачу №(.+)")]
@@ -101,6 +101,7 @@ public sealed class TodoListStepDefinitions(TodoListContext context, TestServerF
         TodoListDetailedData list = await _driver.GetTodoList(context.OpenedListId);
         Assert.Equal(taskCount, list.Items.Length);
         Assert.Equal(SplitCommaSeparatedList(taskTitles), GetItemTitles(list));
+        AssertItemPositionsAreConsistent(list);
     }
 
     [Then(@"(?:я )?вижу завершённые задачи: ""(.*)""")]
@@ -136,6 +137,14 @@ public sealed class TodoListStepDefinitions(TodoListContext context, TestServerF
         {
             string actualFieldErrors = String.Join(", ", ex.Errors[fieldName]);
             Assert.Equal(fieldErrors, actualFieldErrors);
+        }
+    }
+
+    private static void AssertItemPositionsAreConsistent(TodoListDetailedData list)
+    {
+        for (int i = 0, iSize = list.Items.Length; i < iSize; ++i)
+        {
+            Assert.Equal(i, list.Items[i].Position);
         }
     }
 
