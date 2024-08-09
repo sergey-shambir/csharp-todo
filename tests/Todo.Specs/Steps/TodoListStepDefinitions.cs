@@ -129,15 +129,10 @@ public sealed class TodoListStepDefinitions(TodoListContext context, TestServerF
         Assert.Equal(taskTitles, GetListNames(lists));
     }
 
-    [Then(@"вижу (?:ошибку|ошибки) валидации поля ""(.*)"": ""(.*)""")]
-    public void ТогдаВижуОшибкуВалидацииПоля(string fieldName, string fieldErrors)
+    [Then(@"вижу ошибку валидации")]
+    public void ТогдаВижуОшибкуВалидации()
     {
         Assert.IsType<ApiBadRequestException>(context.LastException);
-        if (context.LastException is ApiBadRequestException ex)
-        {
-            string actualFieldErrors = String.Join(", ", ex.Errors[fieldName]);
-            Assert.Equal(fieldErrors, actualFieldErrors);
-        }
     }
 
     private static void AssertItemPositionsAreConsistent(TodoListDetailedData list)

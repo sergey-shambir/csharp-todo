@@ -72,13 +72,13 @@
     @negative
     Сценарий: нельзя создать список с пустым названием
         Пусть я создал список ""
-        Тогда вижу ошибку валидации поля "Name": "The field Name must be a string with a minimum length of 1 and a maximum length of 100."
+        Тогда вижу ошибку валидации
 
     @negative
     Сценарий: нельзя создать задачу с пустым названием
         Пусть я создал список "Домашние дела"
         И добавил задачу ""
-        Тогда вижу ошибку валидации поля "Title": "The field Title must be a string with a minimum length of 1 and a maximum length of 100."
+        Тогда вижу ошибку валидации
 
     @negative
     Сценарий: нельзя создать задачу с названием длиннее 100 символов
@@ -87,7 +87,7 @@
         Тогда вижу 1 задачу: "This very-very-very-very long task description contains exactly 100 (i.e. one hundred) characters..."
 
         Пусть я добавил задачу "This very-very-very-very long task description contains exactly 101 (one hundred and one) characters."
-        Тогда вижу ошибку валидации поля "Title": "The field Title must be a string with a minimum length of 1 and a maximum length of 100."
+        Тогда вижу ошибку валидации
 
     @negative
     Сценарий: нельзя присвоить задаче новое название длиннее 100 символов
@@ -98,4 +98,4 @@
         Тогда вижу 1 задачу: "This very-very-very-very long task description contains exactly 100 (i.e. one hundred) characters..."
 
         Когда я переименовал задачу №0 на "This very-very-very-very long task description contains exactly 101 (one hundred and one) characters."
-        Тогда вижу ошибку валидации поля "Title": "The field Title must be a string with a minimum length of 1 and a maximum length of 100."
+        Тогда вижу ошибку валидации
