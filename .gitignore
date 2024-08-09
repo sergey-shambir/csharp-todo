@@ -4,5 +4,7 @@ src/*/obj/
 tests/*/bin/
 tests/*/obj/
 
+csharp-todo.sln.DotSettings.user
+
 /.vscode/
 /.idea/

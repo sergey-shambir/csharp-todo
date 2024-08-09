@@ -1,5 +1,7 @@
+using Microsoft.Build.Framework;
 using TechTalk.SpecFlow;
 using Todo.Application.Data;
+using Todo.Specs.Context;
 using Todo.Specs.Fixtures;
 using Todo.Specs.Drivers;
 using Xunit;
@@ -7,118 +9,138 @@ using Xunit;
 namespace Todo.Specs.Steps;
 
 [Binding]
-public sealed class TodoListStepDefinitions(TestServerFixture fixture)
+public sealed class TodoListStepDefinitions(TodoListContext context, TestServerFixture fixture)
 {
     private readonly TestServerFixture _fixture = fixture;
     private readonly TodoListTestDriver _driver = new(fixture.HttpClient);
 
-    private int? _createdListId;
-    private TodoListDetailedData? _openedTodoList;
-    private TodoListData[]? _lastTodoListSearchResults;
-
-    private int CreatedListId
-    {
-        get => _createdListId ?? throw new InvalidOperationException("Список дел не ещё создан");
-    }
-
-    private TodoListDetailedData OpenedTodoList
-    {
-        get => _openedTodoList ?? throw new InvalidOperationException("Список дел ещё не открыт");
-    }
-
-    private TodoListData[] LastTodoListSearchResults
-    {
-        get => _lastTodoListSearchResults ?? throw new InvalidOperationException("Поиск списков дел не выполнялся");
-    }
-
     [Given(@"(?:я )?создал список ""(.*)""")]
     public async Task ПустьЯСоздалСписок(string name)
     {
-        var list = await _driver.CreateTodoList(name);
-        _createdListId = list.Id;
+        try
+        {
+            var list = await _driver.CreateTodoList(name);
+            context.OnListCreated(list);
+        }
+        catch (ApiBadRequestException e)
+        {
+            context.LastException = e;
+        }
+    }
+
+    [Given(@"(?:я )?добавил задачи ""(.*)""")]
+    public async Task ПустьЯДобавилЗадачи(string tasksTitles)
+    {
+        foreach (string title in SplitCommaSeparatedList(tasksTitles))
+        {
+            await _driver.AddTodoItem(context.OpenedListId, title);
+        }
     }
 
     [Given(@"(?:я )?добавил задачу ""(.*)""")]
-    public async Task ПустьЯДобавилЗадачу(string title)
+    public async Task ПустьЯДобавилЗадачу(string tasksTitle)
     {
-        await _driver.AddTodoItem(CreatedListId, title);
+        try
+        {
+            await _driver.AddTodoItem(context.OpenedListId, tasksTitle);
+        }
+        catch (ApiBadRequestException e)
+        {
+            context.LastException = e;
+        }
     }
 
-    [Given(@"(?:я )?переместил задачу №(.+) на позицию №(.+)")]
-    public async Task ПустьЯПереместилЗадачу(int position, int newPosition)
+    [When(@"(?:я )?удалил список ""(.*)""")]
+    public async Task КогдаЯУдалилСписок(string name)
     {
-        await _driver.EditTodoItem(CreatedListId, position, new EditTodoItemParams(Position: newPosition));
+        int listId = context.GetListIdByName(name);
+        await _driver.DeleteTodoList(listId);
+        context.OnListDeleted(name);
     }
 
-    [Given(@"(?:я )?переименовал задачу №(.+) на ""(.+)""")]
-    public async Task ПустьЯПереименовалЗадачуНа(int position, string newTitle)
+    [When(@"(?:я )?переименовал задачу №(.+) на ""(.+)""")]
+    public async Task КогдаЯПереименовалЗадачуНа(int position, string newTitle)
     {
-        await _driver.EditTodoItem(CreatedListId, position, new EditTodoItemParams(Title: newTitle));
+        try
+        {
+            await _driver.EditTodoItem(context.OpenedListId, position, newTitle: newTitle);
+        }
+        catch (ApiBadRequestException e)
+        {
+            context.LastException = e;
+        }
     }
 
-    [Given("(?:я )?завершил задачу №(.+)")]
-    public async Task ПустьЯЗавершилЗадачу(int position)
+    [When(@"(?:я )?переместил задачу №(.+) на позицию №(.+)")]
+    public async Task КогдаЯПереместилЗадачу(int position, int newPosition)
     {
-        await _driver.EditTodoItem(CreatedListId, position, new EditTodoItemParams(IsCompleted: true));
+        await _driver.EditTodoItem(context.OpenedListId, position, newPosition: newPosition);
     }
 
-    [Given("(?:я )?удалил задачу №(.+)")]
-    public async Task ПустьЯУдалилЗадачу(int position)
+    [When("(?:я )?завершил задачу №(.+)")]
+    public async Task КогдаЯЗавершилЗадачу(int position)
     {
-        await _driver.DeleteTodoItem(CreatedListId, position);
+        await _driver.EditTodoItem(context.OpenedListId, position, newIsCompleted: true);
     }
 
-    [Given(@"я удалил список ""(.*)""")]
-    public async Task ПустьЯУдалилСписок(string name)
+    [When("(?:я )?удалил задачу №(.+)")]
+    public async Task КогдаЯУдалилЗадачу(int position)
     {
-        var list = LastTodoListSearchResults.First(list => list.Name == name);
-        await _driver.DeleteTodoList(list.Id);
-    }
-
-    [When("(?:я )?открыл созданный список")]
-    public async Task КогдаЯОткрылСозданныйСписок()
-    {
-        _openedTodoList = await _driver.GetTodoList(CreatedListId);
-    }
-
-    [When("(?:я )?открыл списки задач")]
-    public async Task КогдаЯОткрылСпискиЗадач()
-    {
-        _lastTodoListSearchResults = await _driver.ListTodoLists();
-    }
-
-    [When(@"(?:я )?открыл списки задач с фильтром ""(.*)""")]
-    public async Task КогдаЯОткрылСпискиЗадачСФильтром(string searchQuery)
-    {
-        _lastTodoListSearchResults = await _driver.ListTodoLists(searchQuery);
+        await _driver.DeleteTodoItem(context.OpenedListId, position);
     }
 
     [When(@"я перешёл к списку ""(.*)""")]
-    public async Task КогдаЯПерешёлКСписку(string name)
+    public void КогдаЯПерешёлКСписку(string name)
     {
-        var list = LastTodoListSearchResults.First(list => list.Name == name);
-        _openedTodoList = await _driver.GetTodoList(list.Id);
+        context.OnListOpened(name);
     }
 
-    [Then(@"(?:я )?вижу задачи: ""(.*)""")]
-    public void ТогдаЯВижуЗадачи(string tasksTitlesCommaSeparated)
+    [Then(@"(?:я )?вижу (\d+) задач(?:и|у|): ""(.*)""")]
+    public async Task ТогдаЯВижуЗадачи(int taskCount, string taskTitles)
     {
-        string[] taskTitles = SplitCommaSeparatedList(tasksTitlesCommaSeparated);
-        Assert.Equal(taskTitles, GetItemTitles(OpenedTodoList));
+        TodoListDetailedData list = await _driver.GetTodoList(context.OpenedListId);
+        Assert.Equal(taskCount, list.Items.Length);
+        Assert.Equal(SplitCommaSeparatedList(taskTitles), GetItemTitles(list));
+        AssertItemPositionsAreConsistent(list);
     }
 
     [Then(@"(?:я )?вижу завершённые задачи: ""(.*)""")]
-    public void ТогдаЯВижуЗавершённыеЗадачи(string tasksTitlesCommaSeparated)
+    public async Task ТогдаЯВижуЗавершённыеЗадачи(string tasksTitlesCommaSeparated)
     {
+        TodoListDetailedData list = await _driver.GetTodoList(context.OpenedListId);
         string[] taskTitles = SplitCommaSeparatedList(tasksTitlesCommaSeparated);
-        Assert.Equal(taskTitles, GetCompletedItemTitles(OpenedTodoList));
+        Assert.Equal(taskTitles, GetCompletedItemTitles(list));
     }
 
-    [Then(@"(?:я )?вижу списки: ""(.*)""")]
-    public void TогдаЯВижуСписки(string listNamesCommaSeparated)
+    [Then(@"вижу (\d+) спис(?:ок|ка|ки): ""(.*)""")]
+    public async Task TогдаВижуСписок(int listsCount, string listNamesCommaSeparated)
     {
         string[] taskTitles = SplitCommaSeparatedList(listNamesCommaSeparated);
-        Assert.Equal(taskTitles, GetListNames(LastTodoListSearchResults));
+        TodoListData[] lists = await _driver.ListTodoLists("");
+        Assert.Equal(listsCount, lists.Length);
+        Assert.Equal(taskTitles, GetListNames(lists));
+    }
+
+    [Then(@"с фильтром ""(.*)"" вижу списки: ""(.*)""")]
+    public async Task TогдаСФильтромВижуСписки(string searchQuery, string listNamesCommaSeparated)
+    {
+        string[] taskTitles = SplitCommaSeparatedList(listNamesCommaSeparated);
+        TodoListData[] lists = await _driver.ListTodoLists(searchQuery);
+        Assert.Equal(taskTitles, GetListNames(lists));
+    }
+
+    [Then(@"вижу ошибку валидации")]
+    public void ТогдаВижуОшибкуВалидации()
+    {
+        Assert.IsType<ApiBadRequestException>(context.LastException);
+    }
+
+    private static void AssertItemPositionsAreConsistent(TodoListDetailedData list)
+    {
+        for (int i = 0, iSize = list.Items.Length; i < iSize; ++i)
+        {
+            Assert.Equal(i, list.Items[i].Position);
+        }
     }
 
     private static string[] SplitCommaSeparatedList(string text)

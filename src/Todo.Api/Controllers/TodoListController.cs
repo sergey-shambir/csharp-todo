@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Todo.Application.Data;
 using Todo.Application.Services;
@@ -52,9 +53,9 @@ public class TodoListController(TodoApiDbContext context) : ControllerBase
     public async Task<ActionResult> EditTodoItem(
         [FromRoute] int listId,
         [FromRoute] int position,
-        [FromBody] EditTodoItemParams itemParams)
+        [FromBody] EditTodoItemRequest request)
     {
-        await _service.EditTodoItem(listId, position, itemParams);
+        await _service.EditTodoItem(listId, position, new EditTodoItemParams(request.Title, request.IsCompleted, request.Position));
         return Ok();
     }
 
@@ -72,7 +73,17 @@ public class TodoListController(TodoApiDbContext context) : ControllerBase
         return NoContent();
     }
 
-    public record CreateTodoListRequest(string Name);
+    public record CreateTodoListRequest(
+        [StringLength(100, MinimumLength = 1)] string Name
+    );
 
-    public record AddTodoItemRequest(string Title);
+    public record AddTodoItemRequest(
+        [StringLength(100, MinimumLength = 1)] string Title
+    );
+
+    public record EditTodoItemRequest(
+        [StringLength(100, MinimumLength = 1)] string? Title = null,
+        bool? IsCompleted = null,
+        int? Position = null
+    );
 }
