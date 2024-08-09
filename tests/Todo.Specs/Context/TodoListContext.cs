@@ -4,6 +4,9 @@ namespace Todo.Specs.Context;
 
 public class TodoListContext
 {
+    private readonly Dictionary<string, int> _listNameToIdMap = new();
+    private int? _openedListId;
+
     public int OpenedListId => _openedListId ?? throw new ArgumentException("No todo lists created");
     public Exception? LastException { get; set; }
 
@@ -40,7 +43,4 @@ public class TodoListContext
             _listNameToIdMap.Remove(name);
         }
     }
-
-    private readonly Dictionary<string, int> _listNameToIdMap = new();
-    private int? _openedListId;
 }
