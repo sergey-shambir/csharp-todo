@@ -4,5 +4,7 @@ src/*/obj/
 tests/*/bin/
 tests/*/obj/
 
+node_modules/
+
 /.vscode/
 /.idea/
