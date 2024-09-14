@@ -4,7 +4,7 @@ using Todo.Infrastructure.Database;
 var builder = WebApplication.CreateBuilder(
     new WebApplicationOptions{
         Args = args,
-        WebRootPath = "frontend/public"
+        WebRootPath = "frontend/build"
     }
 );
 
