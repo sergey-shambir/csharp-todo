@@ -1,25 +1,23 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useState } from 'react';
+import ITodoList from './models/ITodoList';
+import TodoList from './components/TodoList';
+import { Container, Typography } from '@mui/material';
 
 function App() {
+  const [list, setList] = useState<ITodoList>({
+    id: 1581,
+    name: "TODO list #1",
+    items: [
+      { position: 0, title: "Cleanup the room", isComplete: true },
+      { position: 1, title: "Feed the hamster", isComplete: false }
+    ]
+  })
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container maxWidth="sm">
+      <Typography variant="h4" textAlign="center" gutterBottom>To-Do List</Typography>
+      <TodoList list={list}></TodoList>
+    </Container>
   );
 }
 

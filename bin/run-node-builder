@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+readonly PARENT_DIR=$(dirname "$(readlink -f "$0")")
+readonly PROJECT_DIR=$(dirname "$PARENT_DIR")
+readonly DOCKER_IMAGE=node:22.9.0-bookworm
+readonly CURRENT_USER_ID=$(id -u)
+readonly CURRENT_GROUP_ID=$(id -g)
+
+mkdir -p "$HOME/.cache/yarn"
+mkdir -p "$HOME/.yarn"
+
+if [ ! -f "$HOME/.yarnrc" ]; then
+    touch "$HOME/.yarnrc"
+fi
+
+docker run -it --rm \
+    -v "$PROJECT_DIR:$PROJECT_DIR" \
+    -v "$HOME/.cache/yarn:$HOME/.cache/yarn" \
+    -v "$HOME/.yarn:$HOME/.yarn" \
+    -v "$HOME/.yarnrc:$HOME/.yarnrc" \
+    -v "/etc/passwd:/etc/passwd:ro" \
+    -v "/etc/group:/etc/group:ro" \
+    --workdir="$PROJECT_DIR" \
+    --user="$CURRENT_USER_ID:$CURRENT_GROUP_ID" \
+    "$DOCKER_IMAGE" bash
