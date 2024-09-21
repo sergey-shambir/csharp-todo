@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import ITodoList from './models/ITodoList';
+import TodoListData from './models/ITodoList';
 import TodoList from './components/TodoList';
 import { Container, Typography } from '@mui/material';
 
 function App() {
-  const [list, setList] = useState<ITodoList>({
+  const [list, setList] = useState<TodoListData>({
     id: 1581,
     name: "TODO list #1",
     items: [
