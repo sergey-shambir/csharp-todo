@@ -1,24 +1,24 @@
-import { Alert, Box, Button, Stack, TextField } from "@mui/material";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { TodoApi } from "../api/TodoApi";
+import { Alert, Box, Button, Stack, TextField } from "@mui/material";
 
-type AddItemFormProps = {
-    listId?: number,
+
+type AddListFormProps = {
     disabled?: boolean,
-    onAdded: (title: string) => void
+    onAdded: (listId: number, name: string) => void
 }
 
-type AddItemFormData = {
-    title: string
+type AddListFormData = {
+    name: string
 }
 
-export default function AddItemForm(props: AddItemFormProps) {
-    const form = useForm<AddItemFormData>();
+export default function AddListForm(props: AddListFormProps) {
+    const form = useForm<AddListFormData>();
 
-    const onSubmit = async (data: AddItemFormData) => {
+    const onSubmit = async (data: AddListFormData) => {
         try {
-            await TodoApi.addTodoItem(props.listId!, data.title);
-            props.onAdded(data.title);
+            const listId: number = await TodoApi.createTodoList(data.name);
+            props.onAdded(listId, data.name);
         }
         catch (error) {
             form.setError('root', {
@@ -26,7 +26,7 @@ export default function AddItemForm(props: AddItemFormProps) {
                 message: error instanceof Error ? error.message : String(error)
             });
         }
-    };
+    }
 
     return (
         <Box padding={2} paddingTop={0}>
@@ -35,7 +35,7 @@ export default function AddItemForm(props: AddItemFormProps) {
                     <Stack direction="row" useFlexGap spacing={2}>
                         <Controller
                             defaultValue=""
-                            name="title"
+                            name="name"
                             control={form.control}
                             render={({ field, fieldState }) => (
                                 <TextField
@@ -43,7 +43,7 @@ export default function AddItemForm(props: AddItemFormProps) {
                                     error={Boolean(fieldState.error)}
                                     onChange={field.onChange}
                                     value={field.value}
-                                    label="Title"
+                                    label="Name"
                                     size="small"
                                     disabled={props.disabled}
                                     fullWidth
