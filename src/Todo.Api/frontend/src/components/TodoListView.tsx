@@ -3,6 +3,8 @@ import { TodoListData } from "../api/TodoApi";
 import { Link as RouterLink } from "react-router-dom";
 
 
+// TODO: Реализовать drag&drop средствами react-beautiful-dnd
+// См. https://www.dhiwise.com/post/building-dynamic-interfaces-with-react-mui-drag-and-drop
 export default function TodoListView(props: { list: TodoListData }) {
     return (
         <ListItem>

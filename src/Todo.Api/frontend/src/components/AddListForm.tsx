@@ -1,7 +1,7 @@
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { TodoApi } from "../api/TodoApi";
-import { Alert, Box, Button, Stack, TextField } from "@mui/material";
-
+import { Alert, Box, Stack, TextField } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
 
 type AddListFormProps = {
     disabled?: boolean,
@@ -50,12 +50,13 @@ export default function AddListForm(props: AddListFormProps) {
                                 />
                             )}
                         />
-                        <Button
+                        <LoadingButton
                             type="submit"
                             variant="contained"
                             color="primary"
+                            loading={form.formState.isSubmitting}
                             disabled={props.disabled}
-                        >Add</Button>
+                        >Add</LoadingButton>
                     </Stack>
                     {
                         form.formState.errors.root ? (

@@ -1,7 +1,11 @@
 import { Checkbox, ListItem, ListItemText } from "@mui/material";
 import { TodoItemData } from "../api/TodoApi";
 
-export default function TodoItemView(props: { item: TodoItemData }) {
+type TodoItemViewProps = {
+    item: TodoItemData
+}
+
+export default function TodoItemView(props: TodoItemViewProps) {
     return (
         <ListItem>
             <ListItemText>{props.item.title}</ListItemText>

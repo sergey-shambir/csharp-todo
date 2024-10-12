@@ -37,7 +37,7 @@ export default function HomePage() {
                     (data.lists && data.lists.length > 0) ? (
                         <List dense>
                             {data.lists.map((list: TodoListData) => (
-                                <TodoListView list={list}></TodoListView>
+                                <TodoListView list={list} key={list.id}></TodoListView>
                             ))}
                         </List>
                     ) : (
