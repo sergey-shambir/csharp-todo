@@ -1,13 +1,8 @@
+using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Todo.Infrastructure.Database;
 
-var builder = WebApplication.CreateBuilder(
-    new WebApplicationOptions{
-        Args = args,
-        ContentRootPath = Environment.GetEnvironmentVariable("APP_CONTENT_ROOT_PATH"),
-        WebRootPath = "public"
-    }
-);
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
@@ -20,6 +15,10 @@ builder.Services.AddDbContext<TodoApiDbContext>(
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSpaStaticFiles(configuration =>
+{
+    configuration.RootPath = "frontend/build";
+});
 
 var app = builder.Build();
 
@@ -28,6 +27,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
 }
 
 using (var scope = app.Services.CreateScope())
@@ -38,9 +38,27 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
-app.MapControllers();
 
-app.UseFileServer();
+app.UseWhen(
+    context => !context.Request.Path.StartsWithSegments("/api"),
+    then =>
+    {
+        if (!app.Environment.IsDevelopment())
+        {
+            then.UseSpaStaticFiles();
+        }
+        then.UseSpa(spa =>
+        {
+            if (app.Environment.IsDevelopment())
+            {
+                spa.Options.SourcePath = "frontend";
+                spa.UseReactDevelopmentServer(npmScript: "start");
+            }
+        });
+    }
+);
+
+app.MapControllers();
 
 app.Run();
 
